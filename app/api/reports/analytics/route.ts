@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
 
     // Get booking sources breakdown
     const bookingSources = await prisma.booking.groupBy({
-      by: ['source'],
+      by: ['bookingSource'],
       where: {
         userId: session.user.id,
         createdAt: { gte: startDate },
@@ -228,7 +228,7 @@ export async function GET(request: NextRequest) {
           .map(([month, revenue]) => ({ month, revenue }))
           .sort((a, b) => a.month.localeCompare(b.month)),
         bookingSources: bookingSources.map((s) => ({
-          source: s.source,
+          source: s.bookingSource,
           count: s._count,
         })),
       },

@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         booking: {
           select: {
             propertyId: true,
-            source: true,
+            bookingSource: true,
             property: {
               select: { name: true },
             },
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
     // Revenue by booking source
     const revenueBySource: Record<string, number> = {};
     payments.forEach((payment) => {
-      const source = payment.booking?.source || 'DIRECT';
+      const source = payment.booking?.bookingSource || 'DIRECT';
       revenueBySource[source] =
         (revenueBySource[source] || 0) + parseFloat(payment.amount.toString());
     });
