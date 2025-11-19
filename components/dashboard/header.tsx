@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { useAuth } from '@/hooks';
 import { getInitials } from '@/lib/utils';
 
@@ -59,6 +60,9 @@ export function Header({ onMenuClick }: HeaderProps) {
           <HelpCircle className="h-5 w-5" />
           <span className="sr-only">Help</span>
         </Button>
+
+        {/* Theme toggle */}
+        <ThemeToggle />
 
         {/* User menu */}
         <DropdownMenu>

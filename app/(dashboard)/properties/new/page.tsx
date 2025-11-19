@@ -361,11 +361,11 @@ export default function NewPropertyPage() {
         </Card>
 
         {/* Actions */}
-        <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" asChild>
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end sm:gap-4">
+          <Button type="button" variant="outline" asChild className="w-full sm:w-auto">
             <Link href="/properties">Cancel</Link>
           </Button>
-          <Button type="submit" disabled={createMutation.isPending}>
+          <Button type="submit" disabled={createMutation.isPending} className="w-full sm:w-auto">
             {createMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

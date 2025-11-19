@@ -129,6 +129,29 @@
       'rlig' 1,
       'calt' 1;
   }
+
+  /* Improved focus styles for accessibility */
+  :focus-visible {
+    @apply ring-ring ring-offset-background ring-2 ring-offset-2 outline-none;
+  }
+
+  /* Remove focus ring on mouse click but keep for keyboard */
+  :focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
+
+  /* Respect reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 /* Custom scrollbar */
