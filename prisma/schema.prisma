@@ -59,6 +59,7 @@ model User {
   payments        Payment[]
   documents       Document[]
   messages        Message[]
+  messageTemplates MessageTemplate[]
   notifications   Notification[]
   teamMembers     TeamMember[]
   auditLogs       AuditLog[]
@@ -857,6 +858,34 @@ enum MessageStatus {
   DELIVERED
   READ
   FAILED
+}
+
+model MessageTemplate {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Template Details
+  name            String
+  description     String?
+  subject         String
+  body            String    @db.Text
+  messageType     MessageType @default(EMAIL)
+
+  // Template Variables (JSON array of variable names)
+  variables       Json?     // e.g., ["guestName", "propertyName", "checkIn"]
+
+  // Category
+  category        String?   // e.g., "booking", "payment", "maintenance"
+
+  // Status
+  isActive        Boolean   @default(true)
+
+  // Metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
 }
 
 // ============== TASK MANAGEMENT ==============
