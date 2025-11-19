@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { z } from 'zod';
+import { randomUUID } from 'crypto';
 
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
@@ -8,8 +9,8 @@ import prisma from '@/lib/db';
 const bookingSchema = z.object({
   propertyId: z.string().min(1, 'Property is required'),
   guestName: z.string().min(1, 'Guest name is required'),
-  guestEmail: z.string().email('Invalid email').optional().nullable(),
-  guestPhone: z.string().optional().nullable(),
+  guestEmail: z.string().email('Invalid email'),
+  guestPhone: z.string().min(1, 'Phone is required'),
   checkInDate: z.string().min(1, 'Check-in date is required'),
   checkOutDate: z.string().min(1, 'Check-out date is required'),
   numberOfGuests: z.number().min(1, 'At least 1 guest required').default(1),
@@ -17,9 +18,9 @@ const bookingSchema = z.object({
   status: z
     .enum(['PENDING', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED', 'NO_SHOW'])
     .default('PENDING'),
-  source: z.enum(['DIRECT', 'AIRBNB', 'BOOKING_COM', 'VRBO', 'OTHER']).default('DIRECT'),
-  notes: z.string().optional().nullable(),
-  specialRequests: z.string().optional().nullable(),
+  bookingSource: z.enum(['DIRECT', 'AIRBNB', 'BOOKING_COM', 'VRBO', 'OTHER']).default('DIRECT'),
+  internalNotes: z.string().optional().nullable(),
+  guestNotes: z.string().optional().nullable(),
 });
 
 export async function GET(request: Request) {
@@ -39,9 +40,7 @@ export async function GET(request: Request) {
     const search = searchParams.get('search');
 
     const where: Record<string, unknown> = {
-      property: {
-        userId: session.user.id,
-      },
+      userId: session.user.id,
     };
 
     if (propertyId) {
@@ -53,7 +52,7 @@ export async function GET(request: Request) {
     }
 
     if (source) {
-      where.source = source;
+      where.bookingSource = source;
     }
 
     if (startDate || endDate) {
@@ -90,7 +89,15 @@ export async function GET(request: Request) {
       orderBy: { checkInDate: 'desc' },
     });
 
-    return NextResponse.json(bookings);
+    // Transform for frontend compatibility
+    const transformedBookings = bookings.map((booking) => ({
+      ...booking,
+      source: booking.bookingSource,
+      notes: booking.internalNotes,
+      specialRequests: booking.guestNotes,
+    }));
+
+    return NextResponse.json(transformedBookings);
   } catch (error) {
     console.error('Error fetching bookings:', error);
     return NextResponse.json({ error: 'Failed to fetch bookings' }, { status: 500 });
@@ -106,7 +113,18 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const validatedData = bookingSchema.parse(body);
+
+    // Transform frontend field names to schema field names
+    const transformedBody = {
+      ...body,
+      bookingSource: body.source || body.bookingSource || 'DIRECT',
+      internalNotes: body.notes || body.internalNotes || null,
+      guestNotes: body.specialRequests || body.guestNotes || null,
+      guestEmail: body.guestEmail || '',
+      guestPhone: body.guestPhone || '',
+    };
+
+    const validatedData = bookingSchema.parse(transformedBody);
 
     // Verify property belongs to user
     const property = await prisma.property.findFirst({
@@ -155,20 +173,36 @@ export async function POST(request: Request) {
       );
     }
 
+    // Calculate number of nights
+    const checkIn = new Date(validatedData.checkInDate);
+    const checkOut = new Date(validatedData.checkOutDate);
+    const numberOfNights = Math.ceil(
+      (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // Generate booking reference
+    const bookingReference = `BK-${randomUUID().substring(0, 8).toUpperCase()}`;
+
     const booking = await prisma.booking.create({
       data: {
+        userId: session.user.id,
         propertyId: validatedData.propertyId,
+        bookingReference,
+        bookingType: 'SHORT_TERM',
         guestName: validatedData.guestName,
         guestEmail: validatedData.guestEmail,
         guestPhone: validatedData.guestPhone,
-        checkInDate: new Date(validatedData.checkInDate),
-        checkOutDate: new Date(validatedData.checkOutDate),
+        checkInDate: checkIn,
+        checkOutDate: checkOut,
+        numberOfNights,
         numberOfGuests: validatedData.numberOfGuests,
+        baseRate: validatedData.totalAmount / numberOfNights,
         totalAmount: validatedData.totalAmount,
+        amountDue: validatedData.totalAmount,
         status: validatedData.status,
-        source: validatedData.source,
-        notes: validatedData.notes,
-        specialRequests: validatedData.specialRequests,
+        bookingSource: validatedData.bookingSource,
+        guestNotes: validatedData.guestNotes,
+        internalNotes: validatedData.internalNotes,
       },
       include: {
         property: {
@@ -182,7 +216,15 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(booking, { status: 201 });
+    // Transform for frontend compatibility
+    const transformedBooking = {
+      ...booking,
+      source: booking.bookingSource,
+      notes: booking.internalNotes,
+      specialRequests: booking.guestNotes,
+    };
+
+    return NextResponse.json(transformedBooking, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 });

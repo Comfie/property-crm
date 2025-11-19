@@ -7,8 +7,8 @@ import prisma from '@/lib/db';
 
 const updateBookingSchema = z.object({
   guestName: z.string().min(1, 'Guest name is required').optional(),
-  guestEmail: z.string().email('Invalid email').optional().nullable(),
-  guestPhone: z.string().optional().nullable(),
+  guestEmail: z.string().email('Invalid email').optional(),
+  guestPhone: z.string().optional(),
   checkInDate: z.string().optional(),
   checkOutDate: z.string().optional(),
   numberOfGuests: z.number().min(1).optional(),
@@ -16,9 +16,9 @@ const updateBookingSchema = z.object({
   status: z
     .enum(['PENDING', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED', 'NO_SHOW'])
     .optional(),
-  source: z.enum(['DIRECT', 'AIRBNB', 'BOOKING_COM', 'VRBO', 'OTHER']).optional(),
-  notes: z.string().optional().nullable(),
-  specialRequests: z.string().optional().nullable(),
+  bookingSource: z.enum(['DIRECT', 'AIRBNB', 'BOOKING_COM', 'VRBO', 'OTHER']).optional(),
+  internalNotes: z.string().optional().nullable(),
+  guestNotes: z.string().optional().nullable(),
 });
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -34,9 +34,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const booking = await prisma.booking.findFirst({
       where: {
         id,
-        property: {
-          userId: session.user.id,
-        },
+        userId: session.user.id,
       },
       include: {
         property: {
@@ -61,7 +59,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
 
-    return NextResponse.json(booking);
+    // Transform for frontend compatibility
+    const transformedBooking = {
+      ...booking,
+      source: booking.bookingSource,
+      notes: booking.internalNotes,
+      specialRequests: booking.guestNotes,
+    };
+
+    return NextResponse.json(transformedBooking);
   } catch (error) {
     console.error('Error fetching booking:', error);
     return NextResponse.json({ error: 'Failed to fetch booking' }, { status: 500 });
@@ -78,13 +84,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     const { id } = await params;
 
-    // Verify booking belongs to user's property
+    // Verify booking belongs to user
     const existingBooking = await prisma.booking.findFirst({
       where: {
         id,
-        property: {
-          userId: session.user.id,
-        },
+        userId: session.user.id,
       },
     });
 
@@ -93,7 +97,21 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
 
     const body = await request.json();
-    const validatedData = updateBookingSchema.parse(body);
+
+    // Transform frontend field names to schema field names
+    const transformedBody = {
+      ...body,
+      bookingSource: body.source || body.bookingSource,
+      internalNotes: body.notes !== undefined ? body.notes : body.internalNotes,
+      guestNotes: body.specialRequests !== undefined ? body.specialRequests : body.guestNotes,
+    };
+
+    // Remove frontend field names
+    delete transformedBody.source;
+    delete transformedBody.notes;
+    delete transformedBody.specialRequests;
+
+    const validatedData = updateBookingSchema.parse(transformedBody);
 
     // If dates are being updated, check for overlapping bookings
     if (validatedData.checkInDate || validatedData.checkOutDate) {
@@ -131,13 +149,41 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       }
     }
 
+    // Build update data
+    const updateData: Record<string, unknown> = {};
+
+    if (validatedData.guestName) updateData.guestName = validatedData.guestName;
+    if (validatedData.guestEmail) updateData.guestEmail = validatedData.guestEmail;
+    if (validatedData.guestPhone !== undefined) updateData.guestPhone = validatedData.guestPhone;
+    if (validatedData.numberOfGuests) updateData.numberOfGuests = validatedData.numberOfGuests;
+    if (validatedData.totalAmount !== undefined) {
+      updateData.totalAmount = validatedData.totalAmount;
+      updateData.amountDue = validatedData.totalAmount;
+    }
+    if (validatedData.status) updateData.status = validatedData.status;
+    if (validatedData.bookingSource) updateData.bookingSource = validatedData.bookingSource;
+    if (validatedData.guestNotes !== undefined) updateData.guestNotes = validatedData.guestNotes;
+    if (validatedData.internalNotes !== undefined)
+      updateData.internalNotes = validatedData.internalNotes;
+
+    if (validatedData.checkInDate || validatedData.checkOutDate) {
+      const checkIn = validatedData.checkInDate
+        ? new Date(validatedData.checkInDate)
+        : existingBooking.checkInDate;
+      const checkOut = validatedData.checkOutDate
+        ? new Date(validatedData.checkOutDate)
+        : existingBooking.checkOutDate;
+
+      updateData.checkInDate = checkIn;
+      updateData.checkOutDate = checkOut;
+      updateData.numberOfNights = Math.ceil(
+        (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)
+      );
+    }
+
     const booking = await prisma.booking.update({
       where: { id },
-      data: {
-        ...validatedData,
-        checkInDate: validatedData.checkInDate ? new Date(validatedData.checkInDate) : undefined,
-        checkOutDate: validatedData.checkOutDate ? new Date(validatedData.checkOutDate) : undefined,
-      },
+      data: updateData,
       include: {
         property: {
           select: {
@@ -150,7 +196,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       },
     });
 
-    return NextResponse.json(booking);
+    // Transform for frontend compatibility
+    const transformedBooking = {
+      ...booking,
+      source: booking.bookingSource,
+      notes: booking.internalNotes,
+      specialRequests: booking.guestNotes,
+    };
+
+    return NextResponse.json(transformedBooking);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
@@ -170,13 +224,11 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     const { id } = await params;
 
-    // Verify booking belongs to user's property
+    // Verify booking belongs to user
     const booking = await prisma.booking.findFirst({
       where: {
         id,
-        property: {
-          userId: session.user.id,
-        },
+        userId: session.user.id,
       },
     });
 
