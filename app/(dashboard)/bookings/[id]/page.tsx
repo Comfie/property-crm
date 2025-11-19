@@ -1,8 +1,8 @@
 'use client';
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
   Edit,
@@ -15,6 +15,10 @@ import {
   Clock,
   MessageSquare,
   FileText,
+  LogIn,
+  LogOut,
+  Loader2,
+  AlertTriangle,
 } from 'lucide-react';
 
 import { PageHeader } from '@/components/shared';
@@ -23,6 +27,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
 async function fetchBooking(id: string) {
@@ -50,6 +56,11 @@ const sourceLabels: Record<string, string> = {
 
 export default function BookingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const queryClient = useQueryClient();
+  const [checkInNotes, setCheckInNotes] = useState('');
+  const [checkOutNotes, setCheckOutNotes] = useState('');
+  const [damageReport, setDamageReport] = useState('');
+  const [additionalCharges, setAdditionalCharges] = useState('');
 
   const {
     data: booking,
@@ -58,6 +69,56 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
   } = useQuery({
     queryKey: ['booking', id],
     queryFn: () => fetchBooking(id),
+  });
+
+  // Check-in mutation
+  const checkInMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/bookings/check-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: id,
+          notes: checkInNotes,
+        }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to check in');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['booking', id] });
+      setCheckInNotes('');
+    },
+  });
+
+  // Check-out mutation
+  const checkOutMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/bookings/check-out', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: id,
+          notes: checkOutNotes,
+          damageReport: damageReport || undefined,
+          additionalCharges: additionalCharges ? parseFloat(additionalCharges) : undefined,
+        }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to check out');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['booking', id] });
+      setCheckOutNotes('');
+      setDamageReport('');
+      setAdditionalCharges('');
+    },
   });
 
   if (isLoading) {
@@ -175,6 +236,140 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </CardContent>
           </Card>
+
+          {/* Check-in Action */}
+          {(booking.status === 'CONFIRMED' || booking.status === 'PENDING') && (
+            <Card className="border-green-200 bg-green-50/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-green-700">
+                  <LogIn className="h-5 w-5" />
+                  Check In Guest
+                </CardTitle>
+                <CardDescription>Mark this booking as checked in</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="checkInNotes">Check-in Notes (optional)</Label>
+                  <Textarea
+                    id="checkInNotes"
+                    placeholder="Any notes about the check-in..."
+                    value={checkInNotes}
+                    onChange={(e) => setCheckInNotes(e.target.value)}
+                    rows={2}
+                  />
+                </div>
+                <Button
+                  onClick={() => checkInMutation.mutate()}
+                  disabled={checkInMutation.isPending}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {checkInMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Check In
+                    </>
+                  )}
+                </Button>
+                {checkInMutation.isError && (
+                  <p className="text-sm text-red-600">
+                    {checkInMutation.error?.message || 'Failed to check in'}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Check-out Action */}
+          {booking.status === 'CHECKED_IN' && (
+            <Card className="border-blue-200 bg-blue-50/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-blue-700">
+                  <LogOut className="h-5 w-5" />
+                  Check Out Guest
+                </CardTitle>
+                <CardDescription>Complete the guest&apos;s stay</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="checkOutNotes">Check-out Notes (optional)</Label>
+                  <Textarea
+                    id="checkOutNotes"
+                    placeholder="Any notes about the check-out..."
+                    value={checkOutNotes}
+                    onChange={(e) => setCheckOutNotes(e.target.value)}
+                    rows={2}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="damageReport">Damage Report (optional)</Label>
+                  <Textarea
+                    id="damageReport"
+                    placeholder="Report any damages..."
+                    value={damageReport}
+                    onChange={(e) => setDamageReport(e.target.value)}
+                    rows={2}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="additionalCharges">Additional Charges (optional)</Label>
+                  <input
+                    type="number"
+                    id="additionalCharges"
+                    placeholder="0.00"
+                    value={additionalCharges}
+                    onChange={(e) => setAdditionalCharges(e.target.value)}
+                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                <Button
+                  onClick={() => checkOutMutation.mutate()}
+                  disabled={checkOutMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {checkOutMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Check Out
+                    </>
+                  )}
+                </Button>
+                {checkOutMutation.isError && (
+                  <p className="text-sm text-red-600">
+                    {checkOutMutation.error?.message || 'Failed to check out'}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Checked Out Status */}
+          {booking.status === 'CHECKED_OUT' && booking.checkedOutAt && (
+            <Card className="border-gray-200 bg-gray-50/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-gray-700">
+                  <LogOut className="h-5 w-5" />
+                  Checked Out
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">
+                  Guest checked out on {formatDate(booking.checkedOutAt)}
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Guest Information */}
           <Card>

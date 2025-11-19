@@ -1,9 +1,9 @@
 'use client';
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
   Edit,
@@ -20,7 +20,16 @@ import {
   Check,
   X,
   Star,
+  RefreshCw,
+  Download,
+  Plus,
+  Trash2,
+  Loader2,
+  Link as LinkIcon,
+  Copy,
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 import { PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';
@@ -60,6 +69,13 @@ const propertyTypeLabels: Record<string, string> = {
 
 export default function PropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const queryClient = useQueryClient();
+  const [newCalendarUrl, setNewCalendarUrl] = useState('');
+  const [calendarSource, setCalendarSource] = useState<'AIRBNB' | 'BOOKING_COM' | 'OTHER'>(
+    'AIRBNB'
+  );
+  const [showExportUrl, setShowExportUrl] = useState(false);
+  const [exportUrl, setExportUrl] = useState('');
 
   const {
     data: property,
@@ -69,6 +85,54 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
     queryKey: ['property', id],
     queryFn: () => fetchProperty(id),
   });
+
+  // Sync calendar mutation
+  const syncCalendarMutation = useMutation({
+    mutationFn: async ({
+      url,
+      source,
+    }: {
+      url: string;
+      source: 'AIRBNB' | 'BOOKING_COM' | 'OTHER';
+    }) => {
+      const response = await fetch('/api/calendar/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyId: id,
+          calendarUrl: url,
+          source,
+        }),
+      });
+      if (!response.ok) throw new Error('Failed to sync calendar');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['property', id] });
+      setNewCalendarUrl('');
+    },
+  });
+
+  // Get export URL mutation
+  const getExportUrlMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/calendar/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ propertyId: id }),
+      });
+      if (!response.ok) throw new Error('Failed to get export URL');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setExportUrl(data.calendarUrl);
+      setShowExportUrl(true);
+    },
+  });
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
 
   if (isLoading) {
     return (
@@ -158,9 +222,10 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
 
           {/* Tabs */}
           <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="bookings">Bookings</TabsTrigger>
+              <TabsTrigger value="calendar">Calendar</TabsTrigger>
               <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
               <TabsTrigger value="documents">Documents</TabsTrigger>
             </TabsList>
@@ -307,6 +372,144 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
                   ) : (
                     <p className="text-muted-foreground py-4 text-center">No bookings yet</p>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="calendar" className="space-y-4">
+              {/* Import External Calendar */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <RefreshCw className="h-5 w-5" />
+                    Import External Calendar
+                  </CardTitle>
+                  <CardDescription>
+                    Sync bookings from Airbnb, Booking.com, or other platforms
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="calendarSource">Source</Label>
+                      <select
+                        id="calendarSource"
+                        value={calendarSource}
+                        onChange={(e) =>
+                          setCalendarSource(e.target.value as 'AIRBNB' | 'BOOKING_COM' | 'OTHER')
+                        }
+                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                      >
+                        <option value="AIRBNB">Airbnb</option>
+                        <option value="BOOKING_COM">Booking.com</option>
+                        <option value="OTHER">Other</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="calendarUrl">iCal URL</Label>
+                      <Input
+                        id="calendarUrl"
+                        placeholder="https://..."
+                        value={newCalendarUrl}
+                        onChange={(e) => setNewCalendarUrl(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() =>
+                      syncCalendarMutation.mutate({ url: newCalendarUrl, source: calendarSource })
+                    }
+                    disabled={!newCalendarUrl || syncCalendarMutation.isPending}
+                  >
+                    {syncCalendarMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Syncing...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Import Calendar
+                      </>
+                    )}
+                  </Button>
+                  {syncCalendarMutation.isSuccess && (
+                    <p className="text-sm text-green-600">
+                      Successfully imported {syncCalendarMutation.data.imported} bookings, updated{' '}
+                      {syncCalendarMutation.data.updated} bookings
+                    </p>
+                  )}
+                  {syncCalendarMutation.isError && (
+                    <p className="text-sm text-red-600">
+                      Failed to sync calendar. Please check the URL and try again.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Export Calendar */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Download className="h-5 w-5" />
+                    Export Calendar
+                  </CardTitle>
+                  <CardDescription>Share your calendar with external platforms</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex gap-2">
+                    <Button variant="outline" asChild>
+                      <a href={`/api/calendar/export?propertyId=${id}`} download>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download .ics File
+                      </a>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => getExportUrlMutation.mutate()}
+                      disabled={getExportUrlMutation.isPending}
+                    >
+                      {getExportUrlMutation.isPending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <LinkIcon className="mr-2 h-4 w-4" />
+                      )}
+                      Get Shareable URL
+                    </Button>
+                  </div>
+                  {showExportUrl && exportUrl && (
+                    <div className="bg-muted flex items-center gap-2 rounded-md p-3">
+                      <Input value={exportUrl} readOnly className="flex-1" />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copyToClipboard(exportUrl)}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Sync Info */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>How Calendar Sync Works</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <p className="text-muted-foreground text-sm">
+                    <strong>Import:</strong> Paste your iCal URL from Airbnb or Booking.com to
+                    import blocked dates as bookings.
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    <strong>Export:</strong> Use the shareable URL in your Airbnb/Booking.com
+                    settings to block dates automatically.
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    <strong>Tip:</strong> Set up both import and export to keep all platforms in
+                    sync and prevent double bookings.
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>

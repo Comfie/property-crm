@@ -7,14 +7,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
 
 import { PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatDate } from '@/lib/utils';
 
 const bookingSchema = z.object({
   propertyId: z.string().min(1, 'Property is required'),
@@ -67,6 +67,22 @@ export default function NewBookingPage() {
   const propertyId = watch('propertyId');
   const checkInDate = watch('checkInDate');
   const checkOutDate = watch('checkOutDate');
+
+  // Check availability when property and dates are selected
+  const { data: availability, isLoading: isCheckingAvailability } = useQuery({
+    queryKey: ['availability', propertyId, checkInDate, checkOutDate],
+    queryFn: async () => {
+      const response = await fetch(
+        `/api/bookings/availability?propertyId=${propertyId}&checkIn=${checkInDate}&checkOut=${checkOutDate}`
+      );
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to check availability');
+      }
+      return response.json();
+    },
+    enabled: Boolean(propertyId && checkInDate && checkOutDate && checkInDate < checkOutDate),
+  });
 
   // Calculate total amount based on property rate and nights
   useEffect(() => {
@@ -249,6 +265,61 @@ export default function NewBookingPage() {
                 nights
               </p>
             )}
+
+            {/* Availability Status */}
+            {propertyId && checkInDate && checkOutDate && checkInDate < checkOutDate && (
+              <div className="mt-4 rounded-lg border p-4">
+                {isCheckingAvailability ? (
+                  <div className="text-muted-foreground flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm">Checking availability...</span>
+                  </div>
+                ) : availability?.available ? (
+                  <div className="flex items-center gap-2 text-green-600">
+                    <CheckCircle className="h-5 w-5" />
+                    <div>
+                      <p className="font-medium">Available</p>
+                      <p className="text-sm text-green-600/80">
+                        {availability.propertyName} is available for {availability.nights} nights
+                      </p>
+                    </div>
+                  </div>
+                ) : availability?.reason ? (
+                  <div className="flex items-center gap-2 text-yellow-600">
+                    <AlertTriangle className="h-5 w-5" />
+                    <div>
+                      <p className="font-medium">Stay Restriction</p>
+                      <p className="text-sm text-yellow-600/80">{availability.reason}</p>
+                    </div>
+                  </div>
+                ) : availability?.conflicts && availability.conflicts.length > 0 ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-red-600">
+                      <AlertTriangle className="h-5 w-5" />
+                      <div>
+                        <p className="font-medium">Not Available</p>
+                        <p className="text-sm text-red-600/80">Conflicts with existing bookings:</p>
+                      </div>
+                    </div>
+                    <ul className="text-muted-foreground ml-7 space-y-1 text-sm">
+                      {availability.conflicts.map(
+                        (conflict: {
+                          id: string;
+                          guestName: string;
+                          checkInDate: string;
+                          checkOutDate: string;
+                        }) => (
+                          <li key={conflict.id}>
+                            {conflict.guestName}: {formatDate(conflict.checkInDate)} -{' '}
+                            {formatDate(conflict.checkOutDate)}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                ) : null}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -331,20 +402,41 @@ export default function NewBookingPage() {
         </Card>
 
         {/* Actions */}
-        <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" asChild>
-            <Link href="/bookings">Cancel</Link>
-          </Button>
-          <Button type="submit" disabled={createMutation.isPending}>
-            {createMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              'Create Booking'
-            )}
-          </Button>
+        <div className="flex flex-col gap-4">
+          {availability && !availability.available && (
+            <div className="flex items-center gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-yellow-800">
+              <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+              <p className="text-sm">
+                Warning: This booking conflicts with existing reservations. Proceed with caution.
+              </p>
+            </div>
+          )}
+          <div className="flex justify-end gap-4">
+            <Button type="button" variant="outline" asChild>
+              <Link href="/bookings">Cancel</Link>
+            </Button>
+            <Button
+              type="submit"
+              disabled={createMutation.isPending || isCheckingAvailability}
+              variant={availability && !availability.available ? 'destructive' : 'default'}
+            >
+              {createMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : isCheckingAvailability ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Checking...
+                </>
+              ) : availability && !availability.available ? (
+                'Create Anyway'
+              ) : (
+                'Create Booking'
+              )}
+            </Button>
+          </div>
         </div>
       </form>
     </div>
