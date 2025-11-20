@@ -45,6 +45,9 @@ export async function GET() {
       return NextResponse.json({ error: 'No tenant record found for this email' }, { status: 404 });
     }
 
+    // Get the active property assignment
+    const activeProperty = tenant.properties[0];
+
     // Get maintenance requests for this tenant
     const maintenanceRequests = await prisma.maintenanceRequest.findMany({
       where: { tenantId: tenant.id },
@@ -73,7 +76,24 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      tenant,
+      tenant: {
+        id: tenant.id,
+        firstName: tenant.firstName,
+        lastName: tenant.lastName,
+        email: tenant.email,
+        phone: tenant.phone,
+        property: activeProperty
+          ? {
+              id: activeProperty.property.id,
+              name: activeProperty.property.name,
+              address: activeProperty.property.address,
+              city: activeProperty.property.city,
+            }
+          : null,
+        leaseStart: activeProperty ? activeProperty.leaseStartDate.toISOString() : null,
+        leaseEnd: activeProperty?.leaseEndDate ? activeProperty.leaseEndDate.toISOString() : null,
+        rentAmount: activeProperty ? Number(activeProperty.monthlyRent) : null,
+      },
       maintenanceRequests,
       recentPayments,
     });
