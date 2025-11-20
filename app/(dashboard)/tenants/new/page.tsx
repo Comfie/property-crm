@@ -31,7 +31,10 @@ const tenantSchema = z
     employmentStatus: z.string().optional(),
     employer: z.string().optional(),
     employerPhone: z.string().optional(),
-    monthlyIncome: z.number().optional(),
+    monthlyIncome: z
+      .number()
+      .optional()
+      .transform((val) => (isNaN(val as number) ? undefined : val)),
     emergencyContactName: z.string().optional(),
     emergencyContactPhone: z.string().optional(),
     emergencyContactRelation: z.string().optional(),
@@ -282,7 +285,7 @@ export default function NewTenantPage() {
                   type="number"
                   min="0"
                   step="0.01"
-                  {...register('monthlyIncome')}
+                  {...register('monthlyIncome', { valueAsNumber: true })}
                 />
               </div>
             </div>
