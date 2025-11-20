@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
@@ -53,7 +54,9 @@ export async function POST(request: Request) {
 
     // Extract variables from the template body (e.g., {{variableName}})
     const variableMatches = data.body.match(/\{\{(\w+)\}\}/g) || [];
-    const variables = [...new Set(variableMatches.map((v: string) => v.replace(/\{\{|\}\}/g, '')))];
+    const variables: string[] = Array.from(
+      new Set(variableMatches.map((v: string) => v.replace(/\{\{|\}\}/g, '')))
+    );
 
     const template = await prisma.messageTemplate.create({
       data: {
@@ -63,7 +66,7 @@ export async function POST(request: Request) {
         subject: data.subject,
         body: data.body,
         messageType: data.messageType || 'EMAIL',
-        variables: variables.length > 0 ? variables : null,
+        variables: variables.length > 0 ? variables : Prisma.JsonNull,
         category: data.category || null,
         isActive: data.isActive !== false,
       },

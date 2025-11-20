@@ -404,14 +404,16 @@ export default function DocumentsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="propertyId">Link to Property</Label>
                   <Select
-                    value={uploadForm.propertyId}
-                    onValueChange={(value) => setUploadForm({ ...uploadForm, propertyId: value })}
+                    value={uploadForm.propertyId || 'none'}
+                    onValueChange={(value) =>
+                      setUploadForm({ ...uploadForm, propertyId: value === 'none' ? '' : value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select property" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {properties?.map((property) => (
                         <SelectItem key={property.id} value={property.id}>
                           {property.name}
@@ -424,14 +426,16 @@ export default function DocumentsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="tenantId">Link to Tenant</Label>
                   <Select
-                    value={uploadForm.tenantId}
-                    onValueChange={(value) => setUploadForm({ ...uploadForm, tenantId: value })}
+                    value={uploadForm.tenantId || 'none'}
+                    onValueChange={(value) =>
+                      setUploadForm({ ...uploadForm, tenantId: value === 'none' ? '' : value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select tenant" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {tenants?.map((tenant) => (
                         <SelectItem key={tenant.id} value={tenant.id}>
                           {tenant.firstName} {tenant.lastName}
@@ -503,12 +507,15 @@ export default function DocumentsPage() {
               />
             </div>
 
-            <Select value={filterType} onValueChange={setFilterType}>
+            <Select
+              value={filterType || 'all'}
+              onValueChange={(value) => setFilterType(value === 'all' ? '' : value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Document type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All types</SelectItem>
+                <SelectItem value="all">All types</SelectItem>
                 {documentTypes.map((type) => (
                   <SelectItem key={type.value} value={type.value}>
                     {type.label}
@@ -517,12 +524,15 @@ export default function DocumentsPage() {
               </SelectContent>
             </Select>
 
-            <Select value={filterProperty} onValueChange={setFilterProperty}>
+            <Select
+              value={filterProperty || 'all'}
+              onValueChange={(value) => setFilterProperty(value === 'all' ? '' : value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Property" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All properties</SelectItem>
+                <SelectItem value="all">All properties</SelectItem>
                 {properties?.map((property) => (
                   <SelectItem key={property.id} value={property.id}>
                     {property.name}
@@ -531,12 +541,15 @@ export default function DocumentsPage() {
               </SelectContent>
             </Select>
 
-            <Select value={filterTenant} onValueChange={setFilterTenant}>
+            <Select
+              value={filterTenant || 'all'}
+              onValueChange={(value) => setFilterTenant(value === 'all' ? '' : value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Tenant" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All tenants</SelectItem>
+                <SelectItem value="all">All tenants</SelectItem>
                 {tenants?.map((tenant) => (
                   <SelectItem key={tenant.id} value={tenant.id}>
                     {tenant.firstName} {tenant.lastName}

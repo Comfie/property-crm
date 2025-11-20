@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
@@ -56,11 +57,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
 
     // Extract variables from the template body if body is being updated
-    let variables = existingTemplate.variables;
+    let variables: string[] | null = existingTemplate.variables as string[] | null;
     if (data.body) {
       const variableMatches = data.body.match(/\{\{(\w+)\}\}/g) || [];
-      variables = [...new Set(variableMatches.map((v: string) => v.replace(/\{\{|\}\}/g, '')))];
-      if (variables.length === 0) variables = null;
+      const extractedVars: string[] = Array.from(
+        new Set(variableMatches.map((v: string) => v.replace(/\{\{|\}\}/g, '')))
+      );
+      variables = extractedVars.length > 0 ? extractedVars : null;
     }
 
     const template = await prisma.messageTemplate.update({
@@ -71,7 +74,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         subject: data.subject,
         body: data.body,
         messageType: data.messageType,
-        variables,
+        variables: variables === null ? Prisma.JsonNull : variables,
         category: data.category,
         isActive: data.isActive,
       },

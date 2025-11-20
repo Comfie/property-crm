@@ -65,7 +65,7 @@ const navigation = [
   },
   {
     name: 'Documents',
-    href: '/documents/leases',
+    href: '/documents',
     icon: FileText,
   },
   {

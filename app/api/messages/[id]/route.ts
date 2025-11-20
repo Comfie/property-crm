@@ -26,8 +26,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
             guestName: true,
             guestEmail: true,
             guestPhone: true,
-            checkIn: true,
-            checkOut: true,
+            checkInDate: true,
+            checkOutDate: true,
             property: {
               select: {
                 id: true,
@@ -78,10 +78,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
             select: {
               id: true,
               guestName: true,
+              guestEmail: true,
+              guestPhone: true,
+              checkInDate: true,
+              checkOutDate: true,
               property: {
                 select: {
                   id: true,
                   name: true,
+                  address: true,
                 },
               },
             },
@@ -92,6 +97,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
               firstName: true,
               lastName: true,
               email: true,
+              phone: true,
             },
           },
         },

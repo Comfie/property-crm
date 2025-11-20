@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
@@ -126,15 +127,21 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
 
+    // Transform null values for JSON fields
+    const updateData = {
+      ...validatedData,
+      amenities: validatedData.amenities === null ? Prisma.JsonNull : validatedData.amenities,
+    };
+
     const property = await prisma.property.update({
       where: { id },
-      data: validatedData,
+      data: updateData,
     });
 
     return NextResponse.json(property);
   } catch (error) {
-    if (error instanceof z.ZodError && error.errors && error.errors.length > 0) {
-      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+    if (error instanceof z.ZodError && error.issues && error.issues.length > 0) {
+      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
 
     console.error('Error updating property:', error);

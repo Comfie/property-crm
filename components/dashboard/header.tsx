@@ -44,16 +44,49 @@ export function Header({ onMenuClick }: HeaderProps) {
       </div>
 
       {/* Right side actions */}
-      <div className="flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-2">
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="sr-only">Notifications</span>
-          {/* Notification badge */}
-          <span className="bg-destructive text-destructive-foreground absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-medium">
-            3
-          </span>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="h-5 w-5" />
+              <span className="sr-only">Notifications</span>
+              {/* Notification badge */}
+              <span className="bg-destructive text-destructive-foreground absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-medium">
+                3
+              </span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-80" align="end" forceMount>
+            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <div className="max-h-80 overflow-y-auto">
+              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
+                <p className="text-sm font-medium">New booking request</p>
+                <p className="text-muted-foreground text-xs">
+                  John Doe requested to book Beach House
+                </p>
+                <p className="text-muted-foreground text-xs">2 hours ago</p>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
+                <p className="text-sm font-medium">Payment received</p>
+                <p className="text-muted-foreground text-xs">$1,500 payment from Sarah Smith</p>
+                <p className="text-muted-foreground text-xs">5 hours ago</p>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
+                <p className="text-sm font-medium">Maintenance request</p>
+                <p className="text-muted-foreground text-xs">New maintenance request for Unit 4B</p>
+                <p className="text-muted-foreground text-xs">1 day ago</p>
+              </DropdownMenuItem>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild className="justify-center">
+              <Link href="/notifications" className="w-full text-center text-sm">
+                View all notifications
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Help */}
         <Button variant="ghost" size="icon" className="hidden md:inline-flex">

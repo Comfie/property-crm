@@ -26,7 +26,8 @@ export async function POST(request: Request) {
         user: {
           select: {
             email: true,
-            name: true,
+            firstName: true,
+            lastName: true,
           },
         },
       },
@@ -41,15 +42,14 @@ export async function POST(request: Request) {
       data: {
         propertyId: validatedData.propertyId,
         userId: property.userId,
-        name: validatedData.name,
-        email: validatedData.email,
-        phone: validatedData.phone,
+        contactName: validatedData.name,
+        contactEmail: validatedData.email,
+        contactPhone: validatedData.phone,
         message: validatedData.message || `Inquiry about ${property.name}`,
-        source: 'WEBSITE',
+        inquirySource: 'WEBSITE',
+        inquiryType: 'BOOKING',
         status: 'NEW',
-        preferredMoveIn: validatedData.preferredMoveIn
-          ? new Date(validatedData.preferredMoveIn)
-          : null,
+        checkInDate: validatedData.preferredMoveIn ? new Date(validatedData.preferredMoveIn) : null,
       },
     });
 
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
     console.error('Public inquiry error:', error);
     return NextResponse.json({ error: 'Failed to submit inquiry' }, { status: 500 });

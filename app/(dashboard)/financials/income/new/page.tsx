@@ -19,10 +19,10 @@ const paymentSchema = z.object({
   bookingId: z.string().optional(),
   tenantId: z.string().optional(),
   paymentType: z.string().min(1, 'Payment type is required'),
-  amount: z.coerce.number().min(0.01, 'Amount must be greater than 0'),
+  amount: z.number().min(0.01, 'Amount must be greater than 0'),
   paymentMethod: z.string().min(1, 'Payment method is required'),
   paymentDate: z.string().min(1, 'Payment date is required'),
-  status: z.string().default('PAID'),
+  status: z.string(),
   notes: z.string().optional(),
   bankReference: z.string().optional(),
 });

@@ -31,7 +31,7 @@ const tenantSchema = z.object({
   employmentStatus: z.string().optional(),
   employer: z.string().optional(),
   employerPhone: z.string().optional(),
-  monthlyIncome: z.coerce.number().optional(),
+  monthlyIncome: z.number().optional(),
   emergencyContactName: z.string().optional(),
   emergencyContactPhone: z.string().optional(),
   emergencyContactRelation: z.string().optional(),

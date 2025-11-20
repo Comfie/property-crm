@@ -175,14 +175,13 @@ export default function PublicPropertyPage({ params }: { params: Promise<{ id: s
     const formData = new FormData(e.currentTarget);
     const bookingData = {
       propertyId: id,
-      guestName: formData.get('guestName'),
-      guestEmail: formData.get('guestEmail'),
-      guestPhone: formData.get('guestPhone'),
-      checkIn: checkInDate,
-      checkOut: checkOutDate,
-      guests: Number(formData.get('guests')) || 1,
-      totalAmount: bookingCalculation.total,
-      notes: formData.get('notes'),
+      guestName: formData.get('guestName') as string,
+      guestEmail: formData.get('guestEmail') as string,
+      guestPhone: formData.get('guestPhone') as string,
+      checkInDate: checkInDate,
+      checkOutDate: checkOutDate,
+      numberOfGuests: Number(formData.get('guests')) || 1,
+      specialRequests: (formData.get('notes') as string) || '',
     };
 
     try {

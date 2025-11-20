@@ -41,8 +41,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
             select: {
               id: true,
               guestName: true,
-              checkIn: true,
-              checkOut: true,
+              checkInDate: true,
+              checkOutDate: true,
               property: { select: { id: true, name: true } },
             },
           });

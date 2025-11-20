@@ -19,18 +19,24 @@ export async function GET() {
         lastName: true,
         email: true,
         phone: true,
-        propertyId: true,
-        leaseStart: true,
-        leaseEnd: true,
-        rentAmount: true,
         userId: true,
-        property: {
+        properties: {
+          where: { isActive: true },
           select: {
-            id: true,
-            name: true,
-            address: true,
-            city: true,
+            propertyId: true,
+            leaseStartDate: true,
+            leaseEndDate: true,
+            monthlyRent: true,
+            property: {
+              select: {
+                id: true,
+                name: true,
+                address: true,
+                city: true,
+              },
+            },
           },
+          take: 1,
         },
       },
     });

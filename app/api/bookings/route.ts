@@ -18,7 +18,9 @@ const bookingSchema = z.object({
   status: z
     .enum(['PENDING', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED', 'NO_SHOW'])
     .default('PENDING'),
-  bookingSource: z.enum(['DIRECT', 'AIRBNB', 'BOOKING_COM', 'VRBO', 'OTHER']).default('DIRECT'),
+  bookingSource: z
+    .enum(['DIRECT', 'AIRBNB', 'BOOKING_COM', 'WEBSITE', 'REFERRAL', 'OTHER'])
+    .default('DIRECT'),
   internalNotes: z.string().optional().nullable(),
   guestNotes: z.string().optional().nullable(),
 });
@@ -227,7 +229,7 @@ export async function POST(request: Request) {
     return NextResponse.json(transformedBooking, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
     console.error('Error creating booking:', error);
     return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 });

@@ -20,12 +20,12 @@ const expenseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
   category: z.string().min(1, 'Category is required'),
-  amount: z.coerce.number().min(0.01, 'Amount must be greater than 0'),
+  amount: z.number().min(0.01, 'Amount must be greater than 0'),
   expenseDate: z.string().min(1, 'Expense date is required'),
   vendor: z.string().optional(),
   vendorInvoice: z.string().optional(),
-  isDeductible: z.boolean().default(false),
-  status: z.string().default('UNPAID'),
+  isDeductible: z.boolean(),
+  status: z.string(),
   notes: z.string().optional(),
 });
 

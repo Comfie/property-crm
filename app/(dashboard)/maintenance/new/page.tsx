@@ -21,10 +21,10 @@ const maintenanceSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
   category: z.string().min(1, 'Category is required'),
-  priority: z.string().default('NORMAL'),
+  priority: z.string(),
   location: z.string().optional(),
   scheduledDate: z.string().optional(),
-  estimatedCost: z.coerce.number().optional(),
+  estimatedCost: z.number().optional(),
   assignedTo: z.string().optional(),
 });
 

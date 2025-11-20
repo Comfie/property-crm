@@ -87,22 +87,35 @@ export async function POST(request: Request) {
       totalAmount = (Number(property.monthlyRent) / 30) * nights;
     }
 
+    // Generate booking reference
+    const bookingReference = `BK${Date.now().toString(36).toUpperCase()}`;
+    const baseRate = property.dailyRate
+      ? Number(property.dailyRate)
+      : property.monthlyRent
+        ? Number(property.monthlyRent) / 30
+        : 0;
+
     // Create the booking request as PENDING
     const booking = await prisma.booking.create({
       data: {
         propertyId: validatedData.propertyId,
         userId: property.userId,
+        bookingReference,
+        bookingType: 'SHORT_TERM',
         guestName: validatedData.guestName,
         guestEmail: validatedData.guestEmail,
         guestPhone: validatedData.guestPhone,
         checkInDate: checkIn,
         checkOutDate: checkOut,
+        numberOfNights: nights,
         numberOfGuests: validatedData.numberOfGuests,
+        baseRate,
         totalAmount: totalAmount,
+        amountDue: totalAmount,
         amountPaid: 0,
         status: 'PENDING',
-        source: 'WEBSITE',
-        specialRequests: validatedData.specialRequests,
+        bookingSource: 'WEBSITE',
+        guestNotes: validatedData.specialRequests,
       },
     });
 
@@ -121,7 +134,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
     console.error('Public booking error:', error);
     return NextResponse.json({ error: 'Failed to submit booking request' }, { status: 500 });

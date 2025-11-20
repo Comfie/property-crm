@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { IntegrationPlatform } from '@prisma/client';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
@@ -20,7 +21,7 @@ export async function GET(
       where: {
         userId_platform: {
           userId: session.user.id,
-          platform: platform.toUpperCase(),
+          platform: platform.toUpperCase() as IntegrationPlatform,
         },
       },
     });
@@ -67,7 +68,7 @@ export async function PATCH(
       where: {
         userId_platform: {
           userId: session.user.id,
-          platform: platform.toUpperCase(),
+          platform: platform.toUpperCase() as IntegrationPlatform,
         },
       },
     });
@@ -120,7 +121,7 @@ export async function DELETE(
       where: {
         userId_platform: {
           userId: session.user.id,
-          platform: platform.toUpperCase(),
+          platform: platform.toUpperCase() as IntegrationPlatform,
         },
       },
     });

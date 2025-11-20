@@ -116,6 +116,7 @@ export async function POST(request: NextRequest) {
         issueDate: issueDate ? new Date(issueDate) : null,
         expiryDate: expiryDate ? new Date(expiryDate) : null,
         isPublic: isPublic || false,
+        uploadedBy: session.user.id,
       },
       include: {
         property: {

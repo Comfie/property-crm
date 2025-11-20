@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -51,7 +51,7 @@ async function fetchTenants() {
   return data.tenants || [];
 }
 
-export default function ComposeMessagePage() {
+function ComposeMessageForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedBookingId = searchParams.get('bookingId');
@@ -412,5 +412,19 @@ export default function ComposeMessagePage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function ComposeMessagePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[400px] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      }
+    >
+      <ComposeMessageForm />
+    </Suspense>
   );
 }

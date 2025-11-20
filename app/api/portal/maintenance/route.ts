@@ -23,10 +23,16 @@ export async function POST(request: Request) {
       where: { email: session.user.email },
       select: {
         id: true,
-        propertyId: true,
         userId: true,
         firstName: true,
         lastName: true,
+        properties: {
+          where: { isActive: true },
+          select: {
+            propertyId: true,
+          },
+          take: 1,
+        },
       },
     });
 
@@ -34,7 +40,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No tenant record found for this email' }, { status: 404 });
     }
 
-    if (!tenant.propertyId) {
+    const propertyId = tenant.properties[0]?.propertyId;
+    if (!propertyId) {
       return NextResponse.json({ error: 'No property assigned to this tenant' }, { status: 400 });
     }
 
@@ -44,15 +51,25 @@ export async function POST(request: Request) {
     // Create the maintenance request
     const maintenanceRequest = await prisma.maintenanceRequest.create({
       data: {
-        propertyId: tenant.propertyId,
+        propertyId,
         userId: tenant.userId,
         tenantId: tenant.id,
         title: validatedData.title,
         description: validatedData.description,
-        category: validatedData.category,
-        priority: validatedData.priority,
+        category: validatedData.category as
+          | 'PLUMBING'
+          | 'ELECTRICAL'
+          | 'HVAC'
+          | 'APPLIANCE'
+          | 'STRUCTURAL'
+          | 'PAINTING'
+          | 'CLEANING'
+          | 'LANDSCAPING'
+          | 'PEST_CONTROL'
+          | 'SECURITY'
+          | 'OTHER',
+        priority: validatedData.priority as 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT',
         status: 'PENDING',
-        reportedBy: `${tenant.firstName} ${tenant.lastName}`,
       },
     });
 
@@ -70,7 +87,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
     console.error('Tenant maintenance request error:', error);
     return NextResponse.json({ error: 'Failed to submit maintenance request' }, { status: 500 });
