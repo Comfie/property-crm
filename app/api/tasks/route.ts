@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { TaskType } from '@prisma/client';
 
 import { prisma } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
@@ -27,7 +26,7 @@ export async function GET(request: Request) {
       userId: session.user.id,
       ...(status && { status: status as 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' }),
       ...(priority && { priority: priority as 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT' }),
-      ...(taskType && { taskType: taskType as TaskType }),
+      ...(taskType && { taskType: taskType as any }),
       ...(relatedType && { relatedType }),
       ...(relatedId && { relatedId }),
       ...(assignedTo && { assignedTo }),

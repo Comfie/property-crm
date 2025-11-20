@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { IntegrationPlatform } from '@prisma/client';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
@@ -16,7 +15,7 @@ export async function POST(
     }
 
     const { platform } = await params;
-    const platformUpper = platform.toUpperCase() as IntegrationPlatform;
+    const platformUpper = platform.toUpperCase() as any;
 
     const integration = await prisma.integration.findUnique({
       where: {
