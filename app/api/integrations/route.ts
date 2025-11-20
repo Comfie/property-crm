@@ -114,7 +114,9 @@ export async function GET() {
     return NextResponse.json({
       integrations: allPlatforms,
       byCategory,
-      connectedCount: integrations.filter((i) => i.status === 'CONNECTED').length,
+      connectedCount: integrations.filter(
+        (i: (typeof integrations)[number]) => i.status === 'CONNECTED'
+      ).length,
     });
   } catch (error) {
     console.error('Error fetching integrations:', error);
