@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
@@ -117,7 +118,7 @@ export async function POST(request: Request) {
         sentAt: emailResult.success ? new Date() : null,
         threadId,
         replyTo: data.replyToMessageId || null,
-        attachments: data.attachments || null,
+        attachments: data.attachments ? data.attachments : Prisma.JsonNull,
       },
       include: {
         booking: {

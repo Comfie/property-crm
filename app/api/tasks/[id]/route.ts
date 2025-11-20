@@ -26,7 +26,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     }
 
     // Fetch related entity details if linked
-    let relatedEntity = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let relatedEntity: any = null;
     if (task.relatedType && task.relatedId) {
       switch (task.relatedType) {
         case 'property':

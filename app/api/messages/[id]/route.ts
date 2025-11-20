@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
@@ -158,7 +159,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         recipientEmail: data.recipientEmail,
         recipientPhone: data.recipientPhone,
         status: data.status,
-        attachments: data.attachments,
+        attachments: data.attachments ? data.attachments : Prisma.JsonNull,
         ...statusUpdates,
       },
       include: {
