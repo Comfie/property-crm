@@ -199,7 +199,48 @@ export async function checkAvailability(
 ): Promise<{
   available: boolean;
   conflicts: Array<{ id: string; guestName: string; checkInDate: Date; checkOutDate: Date }>;
+  reason?: string;
 }> {
+  // First check if property has active tenant lease
+  const activeTenantLeases = await prisma.propertyTenant.findMany({
+    where: {
+      propertyId,
+      isActive: true,
+      OR: [
+        {
+          // Tenant lease overlaps with requested dates
+          AND: [
+            { leaseStartDate: { lte: checkOutDate } },
+            {
+              OR: [
+                { leaseEndDate: { gte: checkInDate } },
+                { leaseEndDate: null }, // No end date means ongoing lease
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    include: {
+      tenant: {
+        select: {
+          firstName: true,
+          lastName: true,
+        },
+      },
+    },
+  });
+
+  if (activeTenantLeases.length > 0) {
+    const tenant = activeTenantLeases[0].tenant;
+    return {
+      available: false,
+      conflicts: [],
+      reason: `Property has an active tenant lease (${tenant.firstName} ${tenant.lastName})`,
+    };
+  }
+
+  // Check for overlapping bookings
   const where: Record<string, unknown> = {
     propertyId,
     status: {
@@ -238,6 +279,7 @@ export async function checkAvailability(
   return {
     available: overlappingBookings.length === 0,
     conflicts: overlappingBookings,
+    reason: overlappingBookings.length > 0 ? 'Property has overlapping bookings' : undefined,
   };
 }
 

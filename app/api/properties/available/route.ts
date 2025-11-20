@@ -15,12 +15,22 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    const purpose = searchParams.get('purpose'); // 'booking' or 'tenant'
+
+    // Determine which rental types to include based on purpose
+    let rentalTypeFilter;
+    if (purpose === 'booking') {
+      rentalTypeFilter = { in: ['SHORT_TERM', 'BOTH'] };
+    } else if (purpose === 'tenant') {
+      rentalTypeFilter = { in: ['LONG_TERM', 'BOTH'] };
+    }
 
     // Get all properties owned by the user
     const properties = await prisma.property.findMany({
       where: {
         userId: session.user.id,
         isAvailable: true, // Only include properties marked as available
+        ...(rentalTypeFilter && { rentalType: rentalTypeFilter }),
       },
       include: {
         tenants: {
@@ -100,7 +110,9 @@ export async function GET(request: Request) {
       bedrooms: property.bedrooms,
       bathrooms: property.bathrooms,
       parkingSpaces: property.parkingSpaces,
+      rentalType: property.rentalType,
       monthlyRent: property.monthlyRent,
+      dailyRate: property.dailyRate,
       securityDeposit: property.securityDeposit,
     }));
 

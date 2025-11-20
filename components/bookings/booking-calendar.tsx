@@ -37,6 +37,7 @@ interface BookingEvent {
   propertyName: string;
   guestName: string;
   totalAmount: number;
+  type?: 'booking' | 'lease';
 }
 
 interface Booking {
@@ -52,8 +53,25 @@ interface Booking {
   };
 }
 
+interface TenantLease {
+  id: string;
+  leaseStartDate: string;
+  leaseEndDate: string | null;
+  isActive: boolean;
+  tenant: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  property: {
+    id: string;
+    name: string;
+  };
+}
+
 interface BookingCalendarProps {
   bookings: Booking[];
+  leases?: TenantLease[];
   onSelectEvent?: (event: BookingEvent) => void;
   onSelectSlot?: (slotInfo: SlotInfo) => void;
   className?: string;
@@ -66,10 +84,12 @@ const statusColors: Record<string, { bg: string; border: string }> = {
   CHECKED_OUT: { bg: '#f3f4f6', border: '#6b7280' },
   CANCELLED: { bg: '#fee2e2', border: '#ef4444' },
   NO_SHOW: { bg: '#f3e8ff', border: '#a855f7' },
+  LEASE: { bg: '#fca5a5', border: '#dc2626' }, // Red for tenant leases
 };
 
 export function BookingCalendar({
   bookings,
+  leases = [],
   onSelectEvent,
   onSelectSlot,
   className,
@@ -85,9 +105,9 @@ export function BookingCalendar({
     setCurrentView(view);
   }, []);
 
-  // Transform bookings to calendar events
+  // Transform bookings and leases to calendar events
   const events: BookingEvent[] = useMemo(() => {
-    return bookings.map((booking) => ({
+    const bookingEvents = bookings.map((booking) => ({
       id: booking.id,
       title: `${booking.guestName} - ${booking.property.name}`,
       start: new Date(booking.checkInDate),
@@ -97,8 +117,26 @@ export function BookingCalendar({
       propertyName: booking.property.name,
       guestName: booking.guestName,
       totalAmount: booking.totalAmount,
+      type: 'booking' as const,
     }));
-  }, [bookings]);
+
+    const leaseEvents = leases.map((lease) => ({
+      id: lease.id,
+      title: `🏠 ${lease.tenant.firstName} ${lease.tenant.lastName} (Tenant) - ${lease.property.name}`,
+      start: new Date(lease.leaseStartDate),
+      end: lease.leaseEndDate
+        ? new Date(lease.leaseEndDate)
+        : new Date(new Date().getFullYear() + 1, 11, 31),
+      status: 'LEASE',
+      propertyId: lease.property.id,
+      propertyName: lease.property.name,
+      guestName: `${lease.tenant.firstName} ${lease.tenant.lastName}`,
+      totalAmount: 0,
+      type: 'lease' as const,
+    }));
+
+    return [...bookingEvents, ...leaseEvents];
+  }, [bookings, leases]);
 
   // Custom event styling based on status
   const eventStyleGetter = useCallback((event: BookingEvent) => {
