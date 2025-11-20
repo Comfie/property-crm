@@ -91,10 +91,13 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const outstandingPayments = bookingsWithBalance.reduce((sum: number, b) => {
-      const due = parseFloat(b.totalAmount.toString()) - parseFloat(b.amountPaid.toString());
-      return sum + (due > 0 ? due : 0);
-    }, 0);
+    const outstandingPayments = bookingsWithBalance.reduce(
+      (sum: number, b: (typeof bookingsWithBalance)[number]) => {
+        const due = parseFloat(b.totalAmount.toString()) - parseFloat(b.amountPaid.toString());
+        return sum + (due > 0 ? due : 0);
+      },
+      0
+    );
 
     // Calculate occupancy rate
     const properties = await prisma.property.findMany({
@@ -121,12 +124,15 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const occupiedDays = bookingsInPeriod.reduce((sum: number, booking) => {
-      const start = new Date(Math.max(booking.checkInDate.getTime(), startDate.getTime()));
-      const end = new Date(Math.min(booking.checkOutDate.getTime(), new Date().getTime()));
-      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      return sum + Math.max(0, days);
-    }, 0);
+    const occupiedDays = bookingsInPeriod.reduce(
+      (sum: number, booking: (typeof bookingsInPeriod)[number]) => {
+        const start = new Date(Math.max(booking.checkInDate.getTime(), startDate.getTime()));
+        const end = new Date(Math.min(booking.checkOutDate.getTime(), new Date().getTime()));
+        const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+        return sum + Math.max(0, days);
+      },
+      0
+    );
 
     const occupancyRate = totalPropertyDays > 0 ? (occupiedDays / totalPropertyDays) * 100 : 0;
 

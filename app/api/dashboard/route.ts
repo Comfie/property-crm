@@ -146,11 +146,14 @@ export async function GET() {
     ]);
 
     // Calculate outstanding amount
-    const totalOutstanding = outstandingPayments.reduce((sum: number, booking) => {
-      const due =
-        parseFloat(booking.totalAmount.toString()) - parseFloat(booking.amountPaid.toString());
-      return sum + (due > 0 ? due : 0);
-    }, 0);
+    const totalOutstanding = outstandingPayments.reduce(
+      (sum: number, booking: (typeof outstandingPayments)[number]) => {
+        const due =
+          parseFloat(booking.totalAmount.toString()) - parseFloat(booking.amountPaid.toString());
+        return sum + (due > 0 ? due : 0);
+      },
+      0
+    );
 
     // Get previous month revenue for comparison
     const prevMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
@@ -192,12 +195,15 @@ export async function GET() {
       },
     });
 
-    const occupiedDays = bookingsThisMonth.reduce((sum: number, booking) => {
-      const start = new Date(Math.max(booking.checkInDate.getTime(), startOfMonth.getTime()));
-      const end = new Date(Math.min(booking.checkOutDate.getTime(), endOfMonth.getTime()));
-      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      return sum + Math.max(0, days);
-    }, 0);
+    const occupiedDays = bookingsThisMonth.reduce(
+      (sum: number, booking: (typeof bookingsThisMonth)[number]) => {
+        const start = new Date(Math.max(booking.checkInDate.getTime(), startOfMonth.getTime()));
+        const end = new Date(Math.min(booking.checkOutDate.getTime(), endOfMonth.getTime()));
+        const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+        return sum + Math.max(0, days);
+      },
+      0
+    );
 
     const occupancyRate = totalPropertyDays > 0 ? (occupiedDays / totalPropertyDays) * 100 : 0;
 
