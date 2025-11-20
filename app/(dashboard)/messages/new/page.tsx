@@ -307,17 +307,17 @@ export default function ComposeMessagePage() {
                 <div className="space-y-2">
                   <Label htmlFor="bookingId">Booking</Label>
                   <Select
-                    value={bookingId || ''}
+                    value={bookingId || 'none'}
                     onValueChange={(value) => {
-                      setValue('bookingId', value);
-                      if (value) setValue('tenantId', '');
+                      setValue('bookingId', value === 'none' ? '' : value);
+                      if (value && value !== 'none') setValue('tenantId', '');
                     }}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a booking" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {bookings.map(
                         (booking: {
                           id: string;
@@ -336,17 +336,17 @@ export default function ComposeMessagePage() {
                 <div className="space-y-2">
                   <Label htmlFor="tenantId">Tenant</Label>
                   <Select
-                    value={tenantId || ''}
+                    value={tenantId || 'none'}
                     onValueChange={(value) => {
-                      setValue('tenantId', value);
-                      if (value) setValue('bookingId', '');
+                      setValue('tenantId', value === 'none' ? '' : value);
+                      if (value && value !== 'none') setValue('bookingId', '');
                     }}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a tenant" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {tenants.map(
                         (tenant: {
                           id: string;

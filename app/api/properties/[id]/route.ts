@@ -7,7 +7,7 @@ import { prisma } from '@/lib/db';
 
 const updatePropertySchema = z.object({
   name: z.string().min(1).optional(),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   propertyType: z
     .enum([
       'APARTMENT',
@@ -28,23 +28,24 @@ const updatePropertySchema = z.object({
   postalCode: z.string().min(1).optional(),
   bedrooms: z.number().min(0).optional(),
   bathrooms: z.number().min(0).optional(),
-  size: z.number().optional(),
+  size: z.number().nullable().optional(),
   furnished: z.boolean().optional(),
   parkingSpaces: z.number().optional(),
-  amenities: z.array(z.string()).optional(),
+  amenities: z.array(z.string()).nullable().optional(),
   rentalType: z.enum(['LONG_TERM', 'SHORT_TERM', 'BOTH']).optional(),
-  monthlyRent: z.number().optional(),
-  dailyRate: z.number().optional(),
-  weeklyRate: z.number().optional(),
-  cleaningFee: z.number().optional(),
-  securityDeposit: z.number().optional(),
-  minimumStay: z.number().optional(),
-  maximumStay: z.number().optional(),
+  monthlyRent: z.number().nullable().optional(),
+  dailyRate: z.number().nullable().optional(),
+  weeklyRate: z.number().nullable().optional(),
+  monthlyRate: z.number().nullable().optional(),
+  cleaningFee: z.number().nullable().optional(),
+  securityDeposit: z.number().nullable().optional(),
+  minimumStay: z.number().nullable().optional(),
+  maximumStay: z.number().nullable().optional(),
   petsAllowed: z.boolean().optional(),
   smokingAllowed: z.boolean().optional(),
-  checkInTime: z.string().optional(),
-  checkOutTime: z.string().optional(),
-  houseRules: z.string().optional(),
+  checkInTime: z.string().nullable().optional(),
+  checkOutTime: z.string().nullable().optional(),
+  houseRules: z.string().nullable().optional(),
   status: z.enum(['ACTIVE', 'INACTIVE', 'OCCUPIED', 'MAINTENANCE', 'ARCHIVED']).optional(),
   isAvailable: z.boolean().optional(),
 });
@@ -132,12 +133,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     return NextResponse.json(property);
   } catch (error) {
-    if (error instanceof z.ZodError) {
+    if (error instanceof z.ZodError && error.errors && error.errors.length > 0) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
     }
 
     console.error('Error updating property:', error);
-    return NextResponse.json({ error: 'Failed to update property' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Failed to update property';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 

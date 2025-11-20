@@ -1,7 +1,14 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
-import { Calendar, dateFnsLocalizer, Views, SlotInfo } from 'react-big-calendar';
+import { useMemo, useCallback, useState } from 'react';
+import {
+  Calendar,
+  dateFnsLocalizer,
+  Views,
+  SlotInfo,
+  NavigateAction,
+  View,
+} from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -67,6 +74,17 @@ export function BookingCalendar({
   onSelectSlot,
   className,
 }: BookingCalendarProps) {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentView, setCurrentView] = useState<View>(Views.MONTH);
+
+  const handleNavigate = useCallback((newDate: Date, view: View, action: NavigateAction) => {
+    setCurrentDate(newDate);
+  }, []);
+
+  const handleViewChange = useCallback((view: View) => {
+    setCurrentView(view);
+  }, []);
+
   // Transform bookings to calendar events
   const events: BookingEvent[] = useMemo(() => {
     return bookings.map((booking) => ({
@@ -167,7 +185,10 @@ export function BookingCalendar({
         endAccessor="end"
         style={{ height: 700 }}
         views={[Views.MONTH, Views.WEEK, Views.AGENDA]}
-        defaultView={Views.MONTH}
+        view={currentView}
+        date={currentDate}
+        onNavigate={handleNavigate}
+        onView={handleViewChange}
         eventPropGetter={eventStyleGetter}
         onSelectEvent={onSelectEvent}
         onSelectSlot={onSelectSlot}
