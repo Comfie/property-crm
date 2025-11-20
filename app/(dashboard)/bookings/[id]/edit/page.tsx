@@ -22,8 +22,14 @@ const bookingSchema = z.object({
   guestPhone: z.string().optional(),
   checkInDate: z.string().min(1, 'Check-in date is required'),
   checkOutDate: z.string().min(1, 'Check-out date is required'),
-  numberOfGuests: z.coerce.number().min(1, 'At least 1 guest required'),
-  totalAmount: z.coerce.number().min(0, 'Total amount must be positive'),
+  numberOfGuests: z.preprocess(
+    (val) => (val === '' ? undefined : Number(val)),
+    z.number().min(1, 'At least 1 guest required')
+  ),
+  totalAmount: z.preprocess(
+    (val) => (val === '' ? undefined : Number(val)),
+    z.number().min(0, 'Total amount must be positive')
+  ),
   status: z.string(),
   source: z.string(),
   notes: z.string().optional().nullable(),
