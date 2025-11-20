@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 import { PageHeader } from '@/components/shared';
@@ -14,6 +14,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const tenantSchema = z
   .object({
@@ -39,6 +47,14 @@ const tenantSchema = z
     notes: z.string().optional(),
     createPortalAccess: z.boolean().optional(),
     password: z.string().optional(),
+    // Property assignment fields
+    assignProperty: z.boolean().optional(),
+    propertyId: z.string().optional(),
+    leaseStartDate: z.string().optional(),
+    leaseEndDate: z.string().optional(),
+    propertyMonthlyRent: z.union([z.number(), z.nan()]).optional(),
+    propertyDepositPaid: z.union([z.number(), z.nan()]).optional(),
+    propertyMoveInDate: z.string().optional(),
   })
   .refine(
     (data) => {
@@ -53,6 +69,24 @@ const tenantSchema = z
     {
       message: 'Password must be at least 6 characters when creating portal access',
       path: ['password'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.assignProperty && !data.propertyId) {
+        return false;
+      }
+      if (data.assignProperty && !data.leaseStartDate) {
+        return false;
+      }
+      if (data.assignProperty && !data.propertyMonthlyRent) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Property, lease start date, and monthly rent are required when assigning property',
+      path: ['propertyId'],
     }
   );
 
@@ -70,21 +104,42 @@ const provinces = [
   'Western Cape',
 ];
 
+async function fetchAvailableProperties(startDate?: string, endDate?: string) {
+  const params = new URLSearchParams();
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+
+  const response = await fetch(`/api/properties/available?${params.toString()}`);
+  if (!response.ok) throw new Error('Failed to fetch available properties');
+  return response.json();
+}
+
 export default function NewTenantPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [createPortalAccess, setCreatePortalAccess] = useState(false);
+  const [assignProperty, setAssignProperty] = useState(false);
+  const [leaseStartDate, setLeaseStartDate] = useState('');
+  const [leaseEndDate, setLeaseEndDate] = useState('');
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<TenantFormData>({
     resolver: zodResolver(tenantSchema),
     defaultValues: {
       tenantType: 'TENANT',
       createPortalAccess: false,
+      assignProperty: false,
     },
+  });
+
+  const { data: availableProperties, isLoading: isLoadingProperties } = useQuery({
+    queryKey: ['available-properties', leaseStartDate, leaseEndDate],
+    queryFn: () => fetchAvailableProperties(leaseStartDate, leaseEndDate),
+    enabled: assignProperty,
   });
 
   const createMutation = useMutation({
@@ -116,6 +171,14 @@ export default function NewTenantPage() {
       monthlyIncome:
         data.monthlyIncome !== undefined && !isNaN(data.monthlyIncome)
           ? data.monthlyIncome
+          : undefined,
+      propertyMonthlyRent:
+        data.propertyMonthlyRent !== undefined && !isNaN(data.propertyMonthlyRent)
+          ? data.propertyMonthlyRent
+          : undefined,
+      propertyDepositPaid:
+        data.propertyDepositPaid !== undefined && !isNaN(data.propertyDepositPaid)
+          ? data.propertyDepositPaid
           : undefined,
     };
     createMutation.mutate(cleanedData);
@@ -378,6 +441,113 @@ export default function NewTenantPage() {
                 <p className="text-muted-foreground text-xs">
                   This password will allow the tenant to log in to the portal at /portal/login
                 </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Property Assignment */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Property Assignment</CardTitle>
+            <CardDescription>
+              Assign this tenant to a property and set up lease details (optional)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="assignProperty"
+                checked={assignProperty}
+                {...register('assignProperty')}
+                onChange={(e) => setAssignProperty(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="assignProperty" className="cursor-pointer font-normal">
+                Assign tenant to a property
+              </Label>
+            </div>
+
+            {assignProperty && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="propertyId">Property *</Label>
+                  <Select {...register('propertyId')}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a property" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {isLoadingProperties ? (
+                        <SelectItem value="loading" disabled>
+                          Loading properties...
+                        </SelectItem>
+                      ) : availableProperties && availableProperties.length > 0 ? (
+                        availableProperties.map((property: any) => (
+                          <SelectItem key={property.id} value={property.id}>
+                            {property.name} - {property.address}, {property.city}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="none" disabled>
+                          No available properties
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {errors.propertyId && (
+                    <p className="text-destructive text-sm">{errors.propertyId.message}</p>
+                  )}
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="leaseStartDate">Lease Start Date *</Label>
+                    <Input
+                      id="leaseStartDate"
+                      type="date"
+                      {...register('leaseStartDate')}
+                      onChange={(e) => setLeaseStartDate(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="leaseEndDate">Lease End Date</Label>
+                    <Input
+                      id="leaseEndDate"
+                      type="date"
+                      {...register('leaseEndDate')}
+                      onChange={(e) => setLeaseEndDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="propertyMonthlyRent">Monthly Rent (R) *</Label>
+                    <Input
+                      id="propertyMonthlyRent"
+                      type="number"
+                      placeholder="0.00"
+                      {...register('propertyMonthlyRent', { valueAsNumber: true })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="propertyDepositPaid">Deposit Paid (R)</Label>
+                    <Input
+                      id="propertyDepositPaid"
+                      type="number"
+                      placeholder="0.00"
+                      {...register('propertyDepositPaid', { valueAsNumber: true })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="propertyMoveInDate">Move-In Date</Label>
+                  <Input id="propertyMoveInDate" type="date" {...register('propertyMoveInDate')} />
+                </div>
               </div>
             )}
           </CardContent>

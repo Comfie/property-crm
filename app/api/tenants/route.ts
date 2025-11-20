@@ -34,6 +34,14 @@ const tenantSchema = z.object({
   // Portal access fields
   createPortalAccess: z.boolean().optional().default(false),
   password: z.string().min(6, 'Password must be at least 6 characters').optional().nullable(),
+  // Property assignment fields
+  assignProperty: z.boolean().optional().default(false),
+  propertyId: z.string().optional().nullable(),
+  leaseStartDate: z.string().optional().nullable(),
+  leaseEndDate: z.string().optional().nullable(),
+  propertyMonthlyRent: z.number().optional().nullable(),
+  propertyDepositPaid: z.number().optional().nullable(),
+  propertyMoveInDate: z.string().optional().nullable(),
 });
 
 export async function GET(request: Request) {
@@ -198,6 +206,63 @@ export async function POST(request: Request) {
           isActive: true,
           emailVerified: false,
           propertyLimit: 0, // Tenants don't own properties
+        },
+      });
+    }
+
+    // Assign property if requested
+    if (
+      validatedData.assignProperty &&
+      validatedData.propertyId &&
+      validatedData.leaseStartDate &&
+      validatedData.propertyMonthlyRent !== null &&
+      validatedData.propertyMonthlyRent !== undefined
+    ) {
+      // Verify property belongs to user
+      const property = await prisma.property.findFirst({
+        where: {
+          id: validatedData.propertyId,
+          userId: session.user.id,
+        },
+      });
+
+      if (!property) {
+        return NextResponse.json(
+          { error: 'Property not found or does not belong to you' },
+          { status: 404 }
+        );
+      }
+
+      // Check if property already has an active tenant assignment
+      const existingAssignment = await prisma.propertyTenant.findFirst({
+        where: {
+          propertyId: validatedData.propertyId,
+          isActive: true,
+        },
+      });
+
+      if (existingAssignment) {
+        return NextResponse.json(
+          { error: 'Property already has an active tenant assignment' },
+          { status: 400 }
+        );
+      }
+
+      // Create property-tenant assignment
+      await prisma.propertyTenant.create({
+        data: {
+          propertyId: validatedData.propertyId,
+          tenantId: tenant.id,
+          leaseStartDate: new Date(validatedData.leaseStartDate),
+          leaseEndDate: validatedData.leaseEndDate ? new Date(validatedData.leaseEndDate) : null,
+          monthlyRent: new Prisma.Decimal(validatedData.propertyMonthlyRent),
+          depositPaid: validatedData.propertyDepositPaid
+            ? new Prisma.Decimal(validatedData.propertyDepositPaid)
+            : new Prisma.Decimal(0),
+          moveInDate: validatedData.propertyMoveInDate
+            ? new Date(validatedData.propertyMoveInDate)
+            : null,
+          isActive: true,
         },
       });
     }
