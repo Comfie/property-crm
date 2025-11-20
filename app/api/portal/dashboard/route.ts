@@ -10,6 +10,14 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Verify user is a tenant account
+    if (session.user.accountType !== 'TENANT') {
+      return NextResponse.json(
+        { error: 'Access denied - tenant account required' },
+        { status: 403 }
+      );
+    }
+
     // Find tenant record matching user's email
     const tenant = await prisma.tenant.findFirst({
       where: { email: session.user.email },

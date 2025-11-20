@@ -6,11 +6,6 @@ export default withAuth(
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
 
-    // Don't redirect API routes
-    if (pathname.startsWith('/api')) {
-      return NextResponse.next();
-    }
-
     // Redirect tenants trying to access dashboard to portal
     if (token?.accountType === 'TENANT' && !pathname.startsWith('/portal')) {
       return NextResponse.redirect(new URL('/portal/dashboard', req.url));
@@ -49,8 +44,8 @@ export default withAuth(
           return true;
         }
 
-        // Portal routes and API require tenant account
-        if (pathname.startsWith('/portal') || pathname.startsWith('/api/portal')) {
+        // Portal routes require tenant account
+        if (pathname.startsWith('/portal')) {
           return !!token && token.accountType === 'TENANT';
         }
 
@@ -84,12 +79,12 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes) - except auth routes which are handled above
+     * - api (API routes) - they handle their own auth
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public files
      */
-    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
   ],
 };
