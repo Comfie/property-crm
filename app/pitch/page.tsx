@@ -198,6 +198,9 @@ export default function PitchPage() {
             <Button variant="ghost" asChild>
               <Link href="/">Browse Properties</Link>
             </Button>
+            <Button variant="ghost" asChild>
+              <Link href="/docs">Documentation</Link>
+            </Button>
             <Button asChild>
               <Link href="/register">Get Started Free</Link>
             </Button>

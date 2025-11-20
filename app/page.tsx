@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
-import { Building2, Bed, Bath, MapPin, Search, ArrowRight, Sparkles } from 'lucide-react';
+import { Building2, Bed, Bath, MapPin, Search, ArrowRight, Sparkles, BookOpen } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,6 +61,17 @@ export default function HomePage() {
               <Link href="/pitch">
                 <Sparkles className="mr-1 h-4 w-4" />
                 Pitch
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-600 hover:bg-gray-50 hover:text-gray-700"
+              asChild
+            >
+              <Link href="/docs">
+                <BookOpen className="mr-1 h-4 w-4" />
+                Docs
               </Link>
             </Button>
           </div>
