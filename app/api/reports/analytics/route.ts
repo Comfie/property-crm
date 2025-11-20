@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     });
 
     const totalRevenue = payments.reduce(
-      (sum: number, p) => sum + parseFloat(p.amount.toString()),
+      (sum: number, p: (typeof payments)[number]) => sum + parseFloat(p.amount.toString()),
       0
     );
 
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
     });
 
     const totalExpenses = expenses.reduce(
-      (sum: number, e) => sum + parseFloat(e.amount.toString()),
+      (sum: number, e: (typeof expenses)[number]) => sum + parseFloat(e.amount.toString()),
       0
     );
 

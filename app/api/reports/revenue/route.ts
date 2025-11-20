@@ -65,12 +65,12 @@ export async function GET(request: NextRequest) {
 
     // Calculate totals
     const totalRevenue = payments.reduce(
-      (sum: number, p) => sum + parseFloat(p.amount.toString()),
+      (sum: number, p: (typeof payments)[number]) => sum + parseFloat(p.amount.toString()),
       0
     );
 
     const totalExpenses = expenses.reduce(
-      (sum: number, e) => sum + parseFloat(e.amount.toString()),
+      (sum: number, e: (typeof expenses)[number]) => sum + parseFloat(e.amount.toString()),
       0
     );
 
@@ -115,11 +115,13 @@ export async function GET(request: NextRequest) {
       const propertyExpenses = expenses.filter((e) => e.propertyId === property.id);
 
       const revenue = propertyPayments.reduce(
-        (sum: number, p) => sum + parseFloat(p.amount.toString()),
+        (sum: number, p: (typeof propertyPayments)[number]) =>
+          sum + parseFloat(p.amount.toString()),
         0
       );
       const expenseTotal = propertyExpenses.reduce(
-        (sum: number, e) => sum + parseFloat(e.amount.toString()),
+        (sum: number, e: (typeof propertyExpenses)[number]) =>
+          sum + parseFloat(e.amount.toString()),
         0
       );
 

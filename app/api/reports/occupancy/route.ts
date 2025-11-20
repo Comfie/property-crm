@@ -106,14 +106,14 @@ export async function GET(request: NextRequest) {
     const totalProperties = properties.length;
     const totalAvailableDays = totalProperties * daysInRange;
     const totalOccupiedDays = occupancyByProperty.reduce(
-      (sum: number, p) => sum + p.metrics.occupiedDays,
+      (sum: number, p: (typeof occupancyByProperty)[number]) => sum + p.metrics.occupiedDays,
       0
     );
     const overallOccupancy =
       totalAvailableDays > 0 ? (totalOccupiedDays / totalAvailableDays) * 100 : 0;
 
     const totalRevenue = occupancyByProperty.reduce(
-      (sum: number, p) => sum + p.metrics.totalRevenue,
+      (sum: number, p: (typeof occupancyByProperty)[number]) => sum + p.metrics.totalRevenue,
       0
     );
 

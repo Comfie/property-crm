@@ -95,13 +95,19 @@ export async function GET(request: Request) {
     });
 
     // Calculate totals
-    const totalIncome = monthlyData.reduce((sum: number, m) => sum + m.income, 0);
-    const totalExpenses = monthlyData.reduce((sum: number, m) => sum + m.expenses, 0);
+    const totalIncome = monthlyData.reduce(
+      (sum: number, m: (typeof monthlyData)[number]) => sum + m.income,
+      0
+    );
+    const totalExpenses = monthlyData.reduce(
+      (sum: number, m: (typeof monthlyData)[number]) => sum + m.expenses,
+      0
+    );
     const totalProfit = totalIncome - totalExpenses;
 
     // Income breakdown by type
     const incomeByType = payments.reduce(
-      (acc: Record<string, number>, p) => {
+      (acc: Record<string, number>, p: (typeof payments)[number]) => {
         acc[p.paymentType] = (acc[p.paymentType] || 0) + Number(p.amount);
         return acc;
       },
@@ -110,7 +116,7 @@ export async function GET(request: Request) {
 
     // Expenses breakdown by category
     const expensesByCategory = expenses.reduce(
-      (acc: Record<string, number>, e) => {
+      (acc: Record<string, number>, e: (typeof expenses)[number]) => {
         acc[e.category] = (acc[e.category] || 0) + Number(e.amount);
         return acc;
       },
@@ -163,7 +169,7 @@ export async function GET(request: Request) {
     // Tax deductible expenses
     const taxDeductible = expenses
       .filter((e) => e.isDeductible)
-      .reduce((sum: number, e) => sum + Number(e.amount), 0);
+      .reduce((sum: number, e: (typeof expenses)[number]) => sum + Number(e.amount), 0);
 
     return NextResponse.json({
       year: parseInt(year),
