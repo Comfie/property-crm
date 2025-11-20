@@ -69,6 +69,7 @@ enum AccountType {
   INDIVIDUAL
   COMPANY
   AGENCY
+  TENANT
 }
 
 enum SubscriptionTier {

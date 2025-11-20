@@ -3,7 +3,23 @@ import { NextResponse } from 'next/server';
 
 export default withAuth(
   function middleware(req) {
-    // Add custom middleware logic here if needed
+    const token = req.nextauth.token;
+    const { pathname } = req.nextUrl;
+
+    // Redirect tenants trying to access dashboard to portal
+    if (token?.accountType === 'TENANT' && !pathname.startsWith('/portal')) {
+      return NextResponse.redirect(new URL('/portal/dashboard', req.url));
+    }
+
+    // Redirect property managers trying to access portal to dashboard
+    if (
+      token?.accountType !== 'TENANT' &&
+      pathname.startsWith('/portal') &&
+      pathname !== '/portal/login'
+    ) {
+      return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+
     return NextResponse.next();
   },
   {
@@ -26,6 +42,27 @@ export default withAuth(
           pathname.startsWith('/api/public')
         ) {
           return true;
+        }
+
+        // Portal routes require tenant account
+        if (pathname.startsWith('/portal')) {
+          return !!token && token.accountType === 'TENANT';
+        }
+
+        // Dashboard routes require non-tenant account (property managers)
+        if (
+          pathname.startsWith('/dashboard') ||
+          pathname.startsWith('/properties') ||
+          pathname.startsWith('/tenants') ||
+          pathname.startsWith('/bookings') ||
+          pathname.startsWith('/payments') ||
+          pathname.startsWith('/maintenance') ||
+          pathname.startsWith('/documents') ||
+          pathname.startsWith('/messages') ||
+          pathname.startsWith('/reports') ||
+          pathname.startsWith('/settings')
+        ) {
+          return !!token && token.accountType !== 'TENANT';
         }
 
         // Require token for all other protected routes

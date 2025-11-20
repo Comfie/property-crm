@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { z } from 'zod';
+import bcrypt from 'bcryptjs';
 
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
@@ -29,6 +30,9 @@ const tenantSchema = z.object({
   emergencyContactRelation: z.string().optional().nullable(),
   tenantType: z.enum(['GUEST', 'TENANT', 'BOTH']).default('TENANT'),
   notes: z.string().optional().nullable(),
+  // Portal access fields
+  createPortalAccess: z.boolean().optional().default(false),
+  password: z.string().min(6, 'Password must be at least 6 characters').optional().nullable(),
 });
 
 export async function GET(request: Request) {
@@ -111,6 +115,14 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = tenantSchema.parse(body);
 
+    // Validate portal access requirements
+    if (validatedData.createPortalAccess && !validatedData.password) {
+      return NextResponse.json(
+        { error: 'Password is required when creating portal access' },
+        { status: 400 }
+      );
+    }
+
     // Check if tenant with same email already exists for this user
     const existingTenant = await prisma.tenant.findFirst({
       where: {
@@ -126,9 +138,47 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check if user account with this email already exists if creating portal access
+    if (validatedData.createPortalAccess) {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: validatedData.email },
+      });
+
+      if (existingUser) {
+        return NextResponse.json(
+          { error: 'A user account with this email already exists' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Create tenant with optional user account
+    let tenantUserId = session.user.id; // Default: link to property manager's account
+
+    if (validatedData.createPortalAccess && validatedData.password) {
+      // Create a separate user account for the tenant
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+
+      const tenantUser = await prisma.user.create({
+        data: {
+          email: validatedData.email,
+          password: hashedPassword,
+          firstName: validatedData.firstName,
+          lastName: validatedData.lastName,
+          phone: validatedData.phone,
+          accountType: 'TENANT',
+          isActive: true,
+          emailVerified: false,
+          propertyLimit: 0, // Tenants don't own properties
+        },
+      });
+
+      tenantUserId = tenantUser.id;
+    }
+
     const tenant = await prisma.tenant.create({
       data: {
-        userId: session.user.id,
+        userId: tenantUserId,
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
         email: validatedData.email,
@@ -150,6 +200,15 @@ export async function POST(request: Request) {
         tenantType: validatedData.tenantType,
         notes: validatedData.notes,
         status: 'ACTIVE',
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            accountType: true,
+          },
+        },
       },
     });
 

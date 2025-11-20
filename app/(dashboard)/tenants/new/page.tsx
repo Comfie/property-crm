@@ -15,28 +15,46 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const tenantSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Invalid email'),
-  phone: z.string().min(1, 'Phone is required'),
-  alternatePhone: z.string().optional(),
-  idNumber: z.string().optional(),
-  dateOfBirth: z.string().optional(),
-  currentAddress: z.string().optional(),
-  city: z.string().optional(),
-  province: z.string().optional(),
-  postalCode: z.string().optional(),
-  employmentStatus: z.string().optional(),
-  employer: z.string().optional(),
-  employerPhone: z.string().optional(),
-  monthlyIncome: z.number().optional(),
-  emergencyContactName: z.string().optional(),
-  emergencyContactPhone: z.string().optional(),
-  emergencyContactRelation: z.string().optional(),
-  tenantType: z.string(),
-  notes: z.string().optional(),
-});
+const tenantSchema = z
+  .object({
+    firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
+    email: z.string().email('Invalid email'),
+    phone: z.string().min(1, 'Phone is required'),
+    alternatePhone: z.string().optional(),
+    idNumber: z.string().optional(),
+    dateOfBirth: z.string().optional(),
+    currentAddress: z.string().optional(),
+    city: z.string().optional(),
+    province: z.string().optional(),
+    postalCode: z.string().optional(),
+    employmentStatus: z.string().optional(),
+    employer: z.string().optional(),
+    employerPhone: z.string().optional(),
+    monthlyIncome: z.number().optional(),
+    emergencyContactName: z.string().optional(),
+    emergencyContactPhone: z.string().optional(),
+    emergencyContactRelation: z.string().optional(),
+    tenantType: z.string(),
+    notes: z.string().optional(),
+    createPortalAccess: z.boolean().optional(),
+    password: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.createPortalAccess && !data.password) {
+        return false;
+      }
+      if (data.createPortalAccess && data.password && data.password.length < 6) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Password must be at least 6 characters when creating portal access',
+      path: ['password'],
+    }
+  );
 
 type TenantFormData = z.infer<typeof tenantSchema>;
 
@@ -55,6 +73,7 @@ const provinces = [
 export default function NewTenantPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [createPortalAccess, setCreatePortalAccess] = useState(false);
 
   const {
     register,
@@ -64,6 +83,7 @@ export default function NewTenantPage() {
     resolver: zodResolver(tenantSchema),
     defaultValues: {
       tenantType: 'TENANT',
+      createPortalAccess: false,
     },
   });
 
@@ -308,6 +328,50 @@ export default function NewTenantPage() {
                 />
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Portal Access */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tenant Portal Access</CardTitle>
+            <CardDescription>
+              Give tenant access to the online portal to view their rental information and submit
+              maintenance requests
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="createPortalAccess"
+                checked={createPortalAccess}
+                {...register('createPortalAccess')}
+                onChange={(e) => setCreatePortalAccess(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="createPortalAccess" className="cursor-pointer font-normal">
+                Create portal account for this tenant
+              </Label>
+            </div>
+
+            {createPortalAccess && (
+              <div className="space-y-2">
+                <Label htmlFor="password">Portal Password *</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Minimum 6 characters"
+                  {...register('password')}
+                />
+                {errors.password && (
+                  <p className="text-destructive text-sm">{errors.password.message}</p>
+                )}
+                <p className="text-muted-foreground text-xs">
+                  This password will allow the tenant to log in to the portal at /portal/login
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
