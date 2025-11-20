@@ -152,33 +152,10 @@ export async function POST(request: Request) {
       }
     }
 
-    // Create tenant with optional user account
-    let tenantUserId = session.user.id; // Default: link to property manager's account
-
-    if (validatedData.createPortalAccess && validatedData.password) {
-      // Create a separate user account for the tenant
-      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
-
-      const tenantUser = await prisma.user.create({
-        data: {
-          email: validatedData.email,
-          password: hashedPassword,
-          firstName: validatedData.firstName,
-          lastName: validatedData.lastName,
-          phone: validatedData.phone,
-          accountType: 'TENANT',
-          isActive: true,
-          emailVerified: false,
-          propertyLimit: 0, // Tenants don't own properties
-        },
-      });
-
-      tenantUserId = tenantUser.id;
-    }
-
+    // Create tenant record (always owned by property manager)
     const tenant = await prisma.tenant.create({
       data: {
-        userId: tenantUserId,
+        userId: session.user.id, // Always link to property manager for ownership
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
         email: validatedData.email,
@@ -201,16 +178,26 @@ export async function POST(request: Request) {
         notes: validatedData.notes,
         status: 'ACTIVE',
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            accountType: true,
-          },
-        },
-      },
     });
+
+    // Create separate portal user account if requested (not linked to tenant record)
+    if (validatedData.createPortalAccess && validatedData.password) {
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+
+      await prisma.user.create({
+        data: {
+          email: validatedData.email,
+          password: hashedPassword,
+          firstName: validatedData.firstName,
+          lastName: validatedData.lastName,
+          phone: validatedData.phone,
+          accountType: 'TENANT',
+          isActive: true,
+          emailVerified: false,
+          propertyLimit: 0, // Tenants don't own properties
+        },
+      });
+    }
 
     return NextResponse.json(tenant, { status: 201 });
   } catch (error) {

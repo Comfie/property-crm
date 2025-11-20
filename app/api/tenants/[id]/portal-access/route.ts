@@ -23,22 +23,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const body = await request.json();
     const validatedData = portalAccessSchema.parse(body);
 
-    // Find the tenant and verify ownership
+    // Find the tenant (owned by property manager)
     const tenant = await prisma.tenant.findFirst({
       where: {
         id,
-        user: {
-          id: session.user.id,
-        },
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            accountType: true,
-          },
-        },
+        userId: session.user.id, // Tenant must be owned by this property manager
       },
     });
 
@@ -46,8 +35,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
 
-    // Check if tenant already has a separate user account (TENANT account type)
-    const hasPortalAccess = tenant.user.accountType === 'TENANT';
+    // Check if tenant has portal access by looking for a User account with their email
+    const existingTenantUser = await prisma.user.findUnique({
+      where: { email: tenant.email },
+    });
+
+    const hasPortalAccess = existingTenantUser?.accountType === 'TENANT';
 
     // Handle different actions
     switch (validatedData.action) {
@@ -64,20 +57,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         }
 
         // Check if user with this email already exists
-        const existingUser = await prisma.user.findUnique({
-          where: { email: tenant.email },
-        });
-
-        if (existingUser) {
+        if (existingTenantUser) {
           return NextResponse.json(
             { error: 'A user account with this email already exists' },
             { status: 400 }
           );
         }
 
-        // Create tenant user account
+        // Create tenant user account (but don't link it to tenant record)
         const hashedPassword = await bcrypt.hash(validatedData.password, 10);
-        const tenantUser = await prisma.user.create({
+        await prisma.user.create({
           data: {
             email: tenant.email,
             password: hashedPassword,
@@ -91,12 +80,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           },
         });
 
-        // Update tenant to link to new user account
-        await prisma.tenant.update({
-          where: { id: tenant.id },
-          data: { userId: tenantUser.id },
-        });
-
         return NextResponse.json({
           success: true,
           message: 'Portal access created successfully',
@@ -104,7 +87,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       }
 
       case 'reset': {
-        if (!hasPortalAccess) {
+        if (!hasPortalAccess || !existingTenantUser) {
           return NextResponse.json(
             { error: 'Tenant does not have portal access' },
             { status: 400 }
@@ -121,7 +104,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         // Update password
         const hashedPassword = await bcrypt.hash(validatedData.password, 10);
         await prisma.user.update({
-          where: { id: tenant.userId },
+          where: { email: tenant.email },
           data: { password: hashedPassword },
         });
 
@@ -132,22 +115,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       }
 
       case 'revoke': {
-        if (!hasPortalAccess) {
+        if (!hasPortalAccess || !existingTenantUser) {
           return NextResponse.json(
             { error: 'Tenant does not have portal access' },
             { status: 400 }
           );
         }
 
-        // Delete the tenant user account and relink tenant to property manager
+        // Delete the tenant user account
         await prisma.user.delete({
-          where: { id: tenant.userId },
-        });
-
-        // Update tenant to link back to property manager
-        await prisma.tenant.update({
-          where: { id: tenant.id },
-          data: { userId: session.user.id },
+          where: { email: tenant.email },
         });
 
         return NextResponse.json({
@@ -164,7 +141,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
     console.error('Error managing portal access:', error);
-    return NextResponse.json({ error: 'Failed to manage portal access' }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Failed to manage portal access',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -178,23 +161,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     const { id } = await params;
 
-    // Find the tenant and verify ownership
+    // Find the tenant (owned by property manager)
     const tenant = await prisma.tenant.findFirst({
       where: {
         id,
-        user: {
-          id: session.user.id,
-        },
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            accountType: true,
-            createdAt: true,
-          },
-        },
+        userId: session.user.id, // Tenant must be owned by this property manager
       },
     });
 
@@ -202,12 +173,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
 
-    const hasPortalAccess = tenant.user.accountType === 'TENANT';
+    // Check if tenant has portal access by looking for a User account with their email
+    const tenantUser = await prisma.user.findUnique({
+      where: { email: tenant.email },
+    });
+
+    const hasPortalAccess = tenantUser?.accountType === 'TENANT';
 
     return NextResponse.json({
       hasPortalAccess,
-      userAccountId: hasPortalAccess ? tenant.user.id : null,
-      createdAt: hasPortalAccess ? tenant.user.createdAt : null,
+      userAccountId: hasPortalAccess && tenantUser ? tenantUser.id : null,
+      createdAt: hasPortalAccess && tenantUser ? tenantUser.createdAt : null,
     });
   } catch (error) {
     console.error('Error fetching portal access:', error);
