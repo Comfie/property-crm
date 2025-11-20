@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { z } from 'zod';
-import { Prisma } from '@prisma/client';
 
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
@@ -130,7 +129,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     // Transform null values for JSON fields
     const updateData = {
       ...validatedData,
-      amenities: validatedData.amenities === null ? Prisma.JsonNull : validatedData.amenities,
+      amenities: validatedData.amenities === null ? null : validatedData.amenities,
     };
 
     const property = await prisma.property.update({

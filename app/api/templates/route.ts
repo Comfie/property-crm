@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
@@ -66,7 +65,7 @@ export async function POST(request: Request) {
         subject: data.subject,
         body: data.body,
         messageType: data.messageType || 'EMAIL',
-        variables: variables.length > 0 ? variables : Prisma.JsonNull,
+        variables: variables,
         category: data.category || null,
         isActive: data.isActive !== false,
       },
