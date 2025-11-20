@@ -167,7 +167,7 @@ async function syncGoogleCalendar(userId: string, integration: any) {
   return {
     success: true,
     synced: {
-      properties: properties.filter((p) => p.syncCalendar).length,
+      properties: properties.filter((p: (typeof properties)[number]) => p.syncCalendar).length,
       events: bookings.length,
     },
   };

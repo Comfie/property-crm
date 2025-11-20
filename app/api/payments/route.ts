@@ -82,10 +82,10 @@ export async function GET(request: Request) {
         0
       ),
       pendingAmount: payments
-        .filter((p) => p.status === 'PENDING')
+        .filter((p: (typeof payments)[number]) => p.status === 'PENDING')
         .reduce((sum: number, p: (typeof payments)[number]) => sum + Number(p.amount), 0),
       paidAmount: payments
-        .filter((p) => p.status === 'PAID')
+        .filter((p: (typeof payments)[number]) => p.status === 'PAID')
         .reduce((sum: number, p: (typeof payments)[number]) => sum + Number(p.amount), 0),
       count: payments.length,
     };

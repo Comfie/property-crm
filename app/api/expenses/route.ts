@@ -69,13 +69,13 @@ export async function GET(request: Request) {
         0
       ),
       unpaidAmount: expenses
-        .filter((e) => e.status === 'UNPAID' || e.status === 'OVERDUE')
+        .filter((e: (typeof expenses)[number]) => e.status === 'UNPAID' || e.status === 'OVERDUE')
         .reduce((sum: number, e: (typeof expenses)[number]) => sum + Number(e.amount), 0),
       paidAmount: expenses
-        .filter((e) => e.status === 'PAID')
+        .filter((e: (typeof expenses)[number]) => e.status === 'PAID')
         .reduce((sum: number, e: (typeof expenses)[number]) => sum + Number(e.amount), 0),
       deductibleAmount: expenses
-        .filter((e) => e.isDeductible)
+        .filter((e: (typeof expenses)[number]) => e.isDeductible)
         .reduce((sum: number, e: (typeof expenses)[number]) => sum + Number(e.amount), 0),
       count: expenses.length,
       byCategory: expenses.reduce(

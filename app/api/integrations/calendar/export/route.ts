@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Generate iCal format
-    const icalEvents = bookings.map((booking) => {
+    const icalEvents = bookings.map((booking: (typeof bookings)[number]) => {
       const dtstart = formatICalDate(booking.checkInDate);
       const dtend = formatICalDate(booking.checkOutDate);
       const dtstamp = formatICalDateTime(booking.createdAt);

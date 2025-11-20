@@ -145,7 +145,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       results,
-      availableCount: results.filter((r) => r.available).length,
+      availableCount: results.filter((r: (typeof results)[number]) => r.available).length,
       totalChecked: results.length,
     });
   } catch (error) {

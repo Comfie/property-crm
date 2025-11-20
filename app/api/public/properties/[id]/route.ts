@@ -67,7 +67,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     return NextResponse.json({
       property,
-      bookedDates: bookings.map((b) => ({
+      bookedDates: bookings.map((b: (typeof bookings)[number]) => ({
         start: b.checkInDate,
         end: b.checkOutDate,
       })),

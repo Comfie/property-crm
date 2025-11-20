@@ -81,8 +81,10 @@ export async function GET() {
     };
 
     // Build response with all platforms
-    const allPlatforms = Object.keys(platformDetails).map((platform) => {
-      const existing = integrations.find((i) => i.platform === platform);
+    const allPlatforms = Object.keys(platformDetails).map((platform: string) => {
+      const existing = integrations.find(
+        (i: (typeof integrations)[number]) => i.platform === platform
+      );
       const details = platformDetails[platform as keyof typeof platformDetails];
 
       return {
@@ -96,11 +98,17 @@ export async function GET() {
 
     // Group by category
     const byCategory = {
-      booking: allPlatforms.filter((p) => p.category === 'booking'),
-      calendar: allPlatforms.filter((p) => p.category === 'calendar'),
-      payment: allPlatforms.filter((p) => p.category === 'payment'),
-      communication: allPlatforms.filter((p) => p.category === 'communication'),
-      accounting: allPlatforms.filter((p) => p.category === 'accounting'),
+      booking: allPlatforms.filter((p: (typeof allPlatforms)[number]) => p.category === 'booking'),
+      calendar: allPlatforms.filter(
+        (p: (typeof allPlatforms)[number]) => p.category === 'calendar'
+      ),
+      payment: allPlatforms.filter((p: (typeof allPlatforms)[number]) => p.category === 'payment'),
+      communication: allPlatforms.filter(
+        (p: (typeof allPlatforms)[number]) => p.category === 'communication'
+      ),
+      accounting: allPlatforms.filter(
+        (p: (typeof allPlatforms)[number]) => p.category === 'accounting'
+      ),
     };
 
     return NextResponse.json({

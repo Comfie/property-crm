@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
     });
 
     const revenueByMonth: Record<string, number> = {};
-    monthlyPayments.forEach((payment) => {
+    monthlyPayments.forEach((payment: (typeof monthlyPayments)[number]) => {
       const monthKey = payment.paymentDate.toISOString().slice(0, 7);
       revenueByMonth[monthKey] =
         (revenueByMonth[monthKey] || 0) + parseFloat(payment.amount.toString());
@@ -237,9 +237,9 @@ export async function GET(request: NextRequest) {
       },
       charts: {
         revenueByMonth: Object.entries(revenueByMonth)
-          .map(([month, revenue]) => ({ month, revenue }))
+          .map(([month, revenue]: [string, number]) => ({ month, revenue }))
           .sort((a, b) => a.month.localeCompare(b.month)),
-        bookingSources: bookingSources.map((s) => ({
+        bookingSources: bookingSources.map((s: (typeof bookingSources)[number]) => ({
           source: s.bookingSource,
           count: s._count,
         })),

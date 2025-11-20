@@ -78,19 +78,19 @@ export async function GET(request: Request) {
     }));
 
     // Aggregate income by month
-    payments.forEach((payment) => {
+    payments.forEach((payment: (typeof payments)[number]) => {
       const month = new Date(payment.paymentDate).getMonth();
       monthlyData[month].income += Number(payment.amount);
     });
 
     // Aggregate expenses by month
-    expenses.forEach((expense) => {
+    expenses.forEach((expense: (typeof expenses)[number]) => {
       const month = new Date(expense.expenseDate).getMonth();
       monthlyData[month].expenses += Number(expense.amount);
     });
 
     // Calculate profit for each month
-    monthlyData.forEach((data) => {
+    monthlyData.forEach((data: (typeof monthlyData)[number]) => {
       data.profit = data.income - data.expenses;
     });
 
@@ -129,7 +129,7 @@ export async function GET(request: Request) {
       { propertyId: string; propertyName: string; income: number; expenses: number; profit: number }
     > = {};
 
-    payments.forEach((payment) => {
+    payments.forEach((payment: (typeof payments)[number]) => {
       if (payment.booking?.property) {
         const propId = payment.booking.property.id;
         if (!propertyPerformance[propId]) {
@@ -145,7 +145,7 @@ export async function GET(request: Request) {
       }
     });
 
-    expenses.forEach((expense) => {
+    expenses.forEach((expense: (typeof expenses)[number]) => {
       if (expense.property) {
         const propId = expense.property.id;
         if (!propertyPerformance[propId]) {
@@ -162,13 +162,15 @@ export async function GET(request: Request) {
     });
 
     // Calculate profit for each property
-    Object.values(propertyPerformance).forEach((prop) => {
-      prop.profit = prop.income - prop.expenses;
-    });
+    Object.values(propertyPerformance).forEach(
+      (prop: { profit: number; income: number; expenses: number }) => {
+        prop.profit = prop.income - prop.expenses;
+      }
+    );
 
     // Tax deductible expenses
     const taxDeductible = expenses
-      .filter((e) => e.isDeductible)
+      .filter((e: (typeof expenses)[number]) => e.isDeductible)
       .reduce((sum: number, e: (typeof expenses)[number]) => sum + Number(e.amount), 0);
 
     return NextResponse.json({
@@ -183,7 +185,9 @@ export async function GET(request: Request) {
       monthlyData,
       incomeByType,
       expensesByCategory,
-      propertyPerformance: Object.values(propertyPerformance).sort((a, b) => b.profit - a.profit),
+      propertyPerformance: Object.values(propertyPerformance).sort(
+        (a: { profit: number }, b: { profit: number }) => b.profit - a.profit
+      ),
     });
   } catch (error) {
     console.error('Error fetching financial reports:', error);

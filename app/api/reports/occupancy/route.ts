@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     // Get bookings for each property
     const occupancyByProperty = await Promise.all(
-      properties.map(async (property) => {
+      properties.map(async (property: (typeof properties)[number]) => {
         const bookings = await prisma.booking.findMany({
           where: {
             propertyId: property.id,
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
         let occupiedDays = 0;
         let totalRevenue = 0;
 
-        bookings.forEach((booking) => {
+        bookings.forEach((booking: (typeof bookings)[number]) => {
           const bookingStart = new Date(
             Math.max(booking.checkInDate.getTime(), startDate.getTime())
           );
@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
           },
         });
 
-        bookings.forEach((booking) => {
+        bookings.forEach((booking: (typeof bookings)[number]) => {
           const bookingStart = new Date(
             Math.max(booking.checkInDate.getTime(), monthStart.getTime())
           );
