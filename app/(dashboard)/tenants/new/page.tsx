@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -114,7 +114,7 @@ async function fetchAvailableProperties(startDate?: string, endDate?: string) {
   return response.json();
 }
 
-export default function NewTenantPage() {
+function NewTenantForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -624,5 +624,29 @@ export default function NewTenantPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function NewTenantPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="space-y-6">
+          <PageHeader title="Add New Tenant" description="Create a new tenant or guest profile">
+            <Button variant="outline" asChild>
+              <Link href="/tenants">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Link>
+            </Button>
+          </PageHeader>
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+          </div>
+        </div>
+      }
+    >
+      <NewTenantForm />
+    </Suspense>
   );
 }
