@@ -9,6 +9,26 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  // Create super admin user
+  const adminHashedPassword = await bcrypt.hash('Admin@123', 10);
+
+  const superAdmin = await prisma.user.upsert({
+    where: { email: 'admin@propertycrm.com' },
+    update: {},
+    create: {
+      email: 'admin@propertycrm.com',
+      password: adminHashedPassword,
+      firstName: 'Super',
+      lastName: 'Admin',
+      phone: '+27800000000',
+      role: 'SUPER_ADMIN',
+      subscriptionTier: SubscriptionTier.ENTERPRISE,
+      subscriptionStatus: 'ACTIVE',
+      emailVerified: true,
+      propertyLimit: 0,
+    },
+  });
+
   // Create demo user
   const hashedPassword = await bcrypt.hash('Demo@123', 10);
 
@@ -21,11 +41,32 @@ async function main() {
       firstName: 'Demo',
       lastName: 'User',
       phone: '+27821234567',
+      role: 'CUSTOMER',
       subscriptionTier: SubscriptionTier.PROFESSIONAL,
       subscriptionStatus: 'ACTIVE',
       emailVerified: true,
       propertyLimit: 20,
     },
+  });
+
+  // Delete existing sample data to avoid conflicts
+  await prisma.booking.deleteMany({
+    where: { userId: user.id },
+  });
+  await prisma.inquiry.deleteMany({
+    where: { userId: user.id },
+  });
+  await prisma.maintenanceRequest.deleteMany({
+    where: { userId: user.id },
+  });
+  await prisma.task.deleteMany({
+    where: { userId: user.id },
+  });
+  await prisma.tenant.deleteMany({
+    where: { userId: user.id },
+  });
+  await prisma.property.deleteMany({
+    where: { userId: user.id },
   });
 
   // Create sample properties
@@ -207,12 +248,17 @@ async function main() {
 
   console.log('Database seeded successfully!');
   console.log('');
-  console.log('Demo Credentials:');
+  console.log('Super Admin Credentials:');
+  console.log('Email: admin@propertycrm.com');
+  console.log('Password: Admin@123');
+  console.log('');
+  console.log('Demo Landlord Credentials:');
   console.log('Email: demo@propertycrm.com');
   console.log('Password: Demo@123');
   console.log('');
   console.log('Created:');
-  console.log(`- 1 User`);
+  console.log(`- 1 Super Admin User`);
+  console.log(`- 1 Demo Landlord User`);
   console.log(`- 2 Properties`);
   console.log(`- 1 Tenant`);
   console.log(`- 1 Booking`);

@@ -20,6 +20,9 @@ model User {
   phone           String?
   photoUrl        String?
 
+  // User role
+  role            UserRole  @default(CUSTOMER)
+
   // Account type
   accountType     AccountType @default(INDIVIDUAL)
   companyName     String?
@@ -52,6 +55,7 @@ model User {
   properties      Property[]
   bookings        Booking[]
   tenants         Tenant[]
+  propertyTenants PropertyTenant[]
   inquiries       Inquiry[]
   maintenanceRequests MaintenanceRequest[]
   tasks           Task[]
@@ -63,12 +67,22 @@ model User {
   notifications   Notification[]
   teamMembers     TeamMember[]
   auditLogs       AuditLog[]
+  uploadedFiles   UploadedFile[]
+  reviews         Review[]
+  integrations    Integration[]
+  subscriptionHistory SubscriptionHistory[]
 }
 
 enum AccountType {
   INDIVIDUAL
   COMPANY
   AGENCY
+  TENANT
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  CUSTOMER
   TENANT
 }
 
@@ -438,6 +452,8 @@ enum TenantStatus {
 // Junction table for many-to-many relationship
 model PropertyTenant {
   id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   propertyId      String
   property        Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   tenantId        String
@@ -460,6 +476,7 @@ model PropertyTenant {
   updatedAt       DateTime  @updatedAt
 
   @@unique([propertyId, tenantId])
+  @@index([userId])
 }
 
 // ============== INQUIRY MANAGEMENT ==============
@@ -951,6 +968,8 @@ enum TaskStatus {
 
 model Review {
   id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   propertyId      String
   property        Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   bookingId       String?
@@ -987,6 +1006,8 @@ model Review {
   // Metadata
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
 }
 
 enum ReviewSource {
@@ -1057,11 +1078,48 @@ model AuditLog {
   @@index([entity, entityId])
 }
 
+// ============== FILE UPLOADS ==============
+
+model UploadedFile {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // File Details
+  fileName        String
+  originalName    String
+  fileSize        Int       // Bytes
+  mimeType        String
+  folder          String    // "properties", "documents", "tenants", etc.
+
+  // S3 Storage
+  s3Key           String    @unique // Full S3 key: userId/folder/filename
+  s3Bucket        String
+  s3Region        String
+
+  // Access Control
+  accessToken     String    @unique // Secure token for accessing file
+  isPublic        Boolean   @default(false)
+
+  // Metadata
+  uploadedAt      DateTime  @default(now())
+  lastAccessedAt  DateTime?
+  accessCount     Int       @default(0)
+
+  // Soft delete
+  deletedAt       DateTime?
+
+  @@index([userId])
+  @@index([accessToken])
+  @@index([s3Key])
+}
+
 // ============== INTEGRATIONS ==============
 
 model Integration {
   id              String    @id @default(cuid())
   userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Integration Details
   platform        IntegrationPlatform
@@ -1103,4 +1161,28 @@ enum IntegrationStatus {
   DISCONNECTED
   ERROR
   SYNCING
+}
+
+// ============== SUBSCRIPTION HISTORY ==============
+
+model SubscriptionHistory {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Change details
+  action          String    // "upgraded", "downgraded", "cancelled", "activated", "trial_extended"
+  fromTier        SubscriptionTier?
+  toTier          SubscriptionTier?
+  fromStatus      SubscriptionStatus?
+  toStatus        SubscriptionStatus?
+
+  // Admin action
+  changedBy       String?   // Admin user ID who made the change
+  reason          String?   @db.Text
+
+  // Metadata
+  createdAt       DateTime  @default(now())
+
+  @@index([userId, createdAt])
 }

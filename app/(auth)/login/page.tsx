@@ -50,7 +50,21 @@ function LoginForm() {
         return;
       }
 
-      router.push(callbackUrl);
+      // After successful login, fetch session to get user role
+      const response = await fetch('/api/auth/session');
+      const session = await response.json();
+
+      // Redirect based on role
+      let redirectUrl = callbackUrl;
+      if (session?.user?.role === 'SUPER_ADMIN') {
+        redirectUrl = '/admin/users';
+      } else if (session?.user?.role === 'TENANT') {
+        redirectUrl = '/tenant/dashboard';
+      } else if (session?.user?.role === 'CUSTOMER') {
+        redirectUrl = '/dashboard';
+      }
+
+      router.push(redirectUrl);
       router.refresh();
     } catch {
       setError('An unexpected error occurred. Please try again.');
@@ -134,13 +148,23 @@ function LoginForm() {
       </div>
 
       {/* Demo credentials hint */}
-      <div className="bg-muted/50 rounded-lg border p-4 text-sm">
-        <p className="font-medium">Demo Credentials</p>
-        <p className="text-muted-foreground mt-1">
-          Email: demo@propertycrm.com
-          <br />
-          Password: Demo@123
-        </p>
+      <div className="bg-muted/50 space-y-3 rounded-lg border p-4 text-sm">
+        <div>
+          <p className="font-medium">Super Admin</p>
+          <p className="text-muted-foreground mt-1">
+            Email: admin@propertycrm.com
+            <br />
+            Password: Admin@123
+          </p>
+        </div>
+        <div>
+          <p className="font-medium">Demo Landlord</p>
+          <p className="text-muted-foreground mt-1">
+            Email: demo@propertycrm.com
+            <br />
+            Password: Demo@123
+          </p>
+        </div>
       </div>
     </>
   );

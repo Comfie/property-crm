@@ -251,6 +251,7 @@ export async function POST(request: Request) {
       // Create property-tenant assignment
       await prisma.propertyTenant.create({
         data: {
+          userId: session.user.id,
           propertyId: validatedData.propertyId,
           tenantId: tenant.id,
           leaseStartDate: new Date(validatedData.leaseStartDate),

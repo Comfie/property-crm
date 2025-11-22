@@ -39,9 +39,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     }
 
     // Get all property assignments for this tenant
+    // SECURITY: Filter by userId to ensure user can only see their own properties
     const propertyAssignments = await prisma.propertyTenant.findMany({
       where: {
         tenantId: id,
+        property: {
+          userId: session.user.id,
+        },
       },
       include: {
         property: {
@@ -176,6 +180,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     // Create property-tenant assignment
     const assignment = await prisma.propertyTenant.create({
       data: {
+        userId: session.user.id,
         propertyId: validatedData.propertyId,
         tenantId: id,
         leaseStartDate: new Date(validatedData.leaseStartDate),

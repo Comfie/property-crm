@@ -5,24 +5,64 @@ export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
+    const role = token?.role;
 
-    // Skip middleware for API routes
+    if (pathname.startsWith('/portal') || pathname.startsWith('/tenant')) {
+      console.log('🛑 Middleware Debug:', {
+        path: pathname,
+        role: role,
+        tokenExists: !!token,
+        isTenant: role === 'TENANT',
+      });
+    }
+
+    // Skip middleware for API routes - they handle their own authorization
     if (pathname.startsWith('/api')) {
       return NextResponse.next();
     }
 
-    // Redirect tenants trying to access dashboard to portal
-    if (token?.accountType === 'TENANT' && !pathname.startsWith('/portal')) {
-      return NextResponse.redirect(new URL('/portal/dashboard', req.url));
+    // Three-way routing based on role
+    // SUPER_ADMIN: /admin/*
+    // CUSTOMER: /dashboard/*
+    // TENANT: /tenant/*
+
+    // Super Admin trying to access non-admin routes
+    if (role === 'SUPER_ADMIN' && !pathname.startsWith('/admin')) {
+      return NextResponse.redirect(new URL('/admin/users', req.url));
     }
 
-    // Redirect property managers trying to access portal to dashboard
-    if (
-      token?.accountType !== 'TENANT' &&
-      pathname.startsWith('/portal') &&
-      pathname !== '/portal/login'
-    ) {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
+    // Customer trying to access admin or tenant routes
+    if (role === 'CUSTOMER') {
+      if (pathname.startsWith('/admin')) {
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+      }
+      if (
+        (pathname.startsWith('/tenant') && !pathname.startsWith('/tenants')) ||
+        pathname.startsWith('/portal')
+      ) {
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+      }
+    }
+
+    // Tenant trying to access admin or customer routes
+    if (role === 'TENANT') {
+      if (pathname.startsWith('/admin')) {
+        return NextResponse.redirect(new URL('/tenant/dashboard', req.url));
+      }
+      if (
+        pathname.startsWith('/dashboard') ||
+        pathname.startsWith('/properties') ||
+        pathname.startsWith('/tenants') ||
+        pathname.startsWith('/bookings') ||
+        pathname.startsWith('/payments') ||
+        pathname.startsWith('/maintenance') ||
+        pathname.startsWith('/documents') ||
+        pathname.startsWith('/messages') ||
+        pathname.startsWith('/reports') ||
+        pathname.startsWith('/settings')
+      ) {
+        return NextResponse.redirect(new URL('/tenant/dashboard', req.url));
+      }
     }
 
     return NextResponse.next();
@@ -31,6 +71,7 @@ export default withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl;
+        const role = token?.role;
 
         // Allow access to public pages without token
         if (
@@ -39,35 +80,43 @@ export default withAuth(
           pathname.startsWith('/pitch') ||
           pathname.startsWith('/docs') ||
           pathname.startsWith('/login') ||
+          pathname.startsWith('/portal/login') ||
           pathname.startsWith('/register') ||
           pathname.startsWith('/forgot-password') ||
           pathname.startsWith('/verify-email') ||
-          pathname.startsWith('/portal/login') ||
           pathname.startsWith('/api/auth') ||
           pathname.startsWith('/api/public')
         ) {
           return true;
         }
 
-        // Portal routes require tenant account
-        if (pathname.startsWith('/portal')) {
-          return !!token && token.accountType === 'TENANT';
+        // Admin routes require SUPER_ADMIN role
+        if (pathname.startsWith('/admin')) {
+          return !!token && role === 'SUPER_ADMIN';
         }
 
-        // Dashboard routes require non-tenant account (property managers)
+        // Dashboard routes require CUSTOMER role (check this BEFORE tenant routes to avoid /tenants matching /tenant)
         if (
           pathname.startsWith('/dashboard') ||
           pathname.startsWith('/properties') ||
-          pathname.startsWith('/tenants') ||
           pathname.startsWith('/bookings') ||
           pathname.startsWith('/payments') ||
           pathname.startsWith('/maintenance') ||
           pathname.startsWith('/documents') ||
           pathname.startsWith('/messages') ||
           pathname.startsWith('/reports') ||
-          pathname.startsWith('/settings')
+          pathname.startsWith('/settings') ||
+          pathname.startsWith('/tenants')
         ) {
-          return !!token && token.accountType !== 'TENANT';
+          return !!token && role === 'CUSTOMER';
+        }
+
+        // Tenant routes require TENANT role (except /portal/login which is public)
+        if (
+          (pathname.startsWith('/tenant') || pathname.startsWith('/portal')) &&
+          pathname !== '/portal/login'
+        ) {
+          return !!token && role === 'TENANT';
         }
 
         // Require token for all other protected routes

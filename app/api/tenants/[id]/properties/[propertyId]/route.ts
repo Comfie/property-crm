@@ -62,10 +62,14 @@ export async function PUT(
     const validatedData = updateAssignmentSchema.parse(body);
 
     // Find the property-tenant assignment
+    // SECURITY: Verify property belongs to user through the relation
     const assignment = await prisma.propertyTenant.findFirst({
       where: {
         propertyId,
         tenantId: id,
+        property: {
+          userId: session.user.id,
+        },
       },
     });
 
@@ -163,10 +167,14 @@ export async function DELETE(
     const { moveOutDate } = terminateLeaseSchema.parse(body);
 
     // Find the property-tenant assignment
+    // SECURITY: Verify property belongs to user through the relation
     const assignment = await prisma.propertyTenant.findFirst({
       where: {
         propertyId,
         tenantId: id,
+        property: {
+          userId: session.user.id,
+        },
       },
     });
 

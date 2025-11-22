@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "AccountType" AS ENUM ('INDIVIDUAL', 'COMPANY', 'AGENCY');
+CREATE TYPE "AccountType" AS ENUM ('INDIVIDUAL', 'COMPANY', 'AGENCY', 'TENANT');
 
 -- CreateEnum
 CREATE TYPE "SubscriptionTier" AS ENUM ('FREE', 'STARTER', 'PROFESSIONAL', 'ENTERPRISE');
@@ -287,6 +287,7 @@ CREATE TABLE "Tenant" (
 -- CreateTable
 CREATE TABLE "PropertyTenant" (
     "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     "propertyId" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "leaseStartDate" TIMESTAMP(3) NOT NULL,
@@ -459,6 +460,24 @@ CREATE TABLE "Message" (
 );
 
 -- CreateTable
+CREATE TABLE "MessageTemplate" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "subject" TEXT NOT NULL,
+    "body" TEXT NOT NULL,
+    "messageType" "MessageType" NOT NULL DEFAULT 'EMAIL',
+    "variables" JSONB,
+    "category" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "MessageTemplate_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Task" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -484,6 +503,7 @@ CREATE TABLE "Task" (
 -- CreateTable
 CREATE TABLE "Review" (
     "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     "propertyId" TEXT NOT NULL,
     "bookingId" TEXT,
     "reviewerName" TEXT NOT NULL,
@@ -539,6 +559,28 @@ CREATE TABLE "AuditLog" (
 );
 
 -- CreateTable
+CREATE TABLE "UploadedFile" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "fileName" TEXT NOT NULL,
+    "originalName" TEXT NOT NULL,
+    "fileSize" INTEGER NOT NULL,
+    "mimeType" TEXT NOT NULL,
+    "folder" TEXT NOT NULL,
+    "s3Key" TEXT NOT NULL,
+    "s3Bucket" TEXT NOT NULL,
+    "s3Region" TEXT NOT NULL,
+    "accessToken" TEXT NOT NULL,
+    "isPublic" BOOLEAN NOT NULL DEFAULT false,
+    "uploadedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "lastAccessedAt" TIMESTAMP(3),
+    "accessCount" INTEGER NOT NULL DEFAULT 0,
+    "deletedAt" TIMESTAMP(3),
+
+    CONSTRAINT "UploadedFile_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Integration" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -571,6 +613,9 @@ CREATE UNIQUE INDEX "Property_bookingComId_key" ON "Property"("bookingComId");
 CREATE UNIQUE INDEX "Booking_bookingReference_key" ON "Booking"("bookingReference");
 
 -- CreateIndex
+CREATE INDEX "PropertyTenant_userId_idx" ON "PropertyTenant"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "PropertyTenant_propertyId_tenantId_key" ON "PropertyTenant"("propertyId", "tenantId");
 
 -- CreateIndex
@@ -583,10 +628,31 @@ CREATE INDEX "MaintenanceRequest_status_priority_propertyId_idx" ON "Maintenance
 CREATE UNIQUE INDEX "Payment_paymentReference_key" ON "Payment"("paymentReference");
 
 -- CreateIndex
+CREATE INDEX "MessageTemplate_userId_idx" ON "MessageTemplate"("userId");
+
+-- CreateIndex
+CREATE INDEX "Review_userId_idx" ON "Review"("userId");
+
+-- CreateIndex
 CREATE INDEX "AuditLog_userId_createdAt_idx" ON "AuditLog"("userId", "createdAt");
 
 -- CreateIndex
 CREATE INDEX "AuditLog_entity_entityId_idx" ON "AuditLog"("entity", "entityId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UploadedFile_s3Key_key" ON "UploadedFile"("s3Key");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UploadedFile_accessToken_key" ON "UploadedFile"("accessToken");
+
+-- CreateIndex
+CREATE INDEX "UploadedFile_userId_idx" ON "UploadedFile"("userId");
+
+-- CreateIndex
+CREATE INDEX "UploadedFile_accessToken_idx" ON "UploadedFile"("accessToken");
+
+-- CreateIndex
+CREATE INDEX "UploadedFile_s3Key_idx" ON "UploadedFile"("s3Key");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Integration_userId_platform_key" ON "Integration"("userId", "platform");
@@ -608,6 +674,9 @@ ALTER TABLE "Booking" ADD CONSTRAINT "Booking_tenantId_fkey" FOREIGN KEY ("tenan
 
 -- AddForeignKey
 ALTER TABLE "Tenant" ADD CONSTRAINT "Tenant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PropertyTenant" ADD CONSTRAINT "PropertyTenant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PropertyTenant" ADD CONSTRAINT "PropertyTenant_propertyId_fkey" FOREIGN KEY ("propertyId") REFERENCES "Property"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -664,7 +733,13 @@ ALTER TABLE "Message" ADD CONSTRAINT "Message_bookingId_fkey" FOREIGN KEY ("book
 ALTER TABLE "Message" ADD CONSTRAINT "Message_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "MessageTemplate" ADD CONSTRAINT "MessageTemplate_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Task" ADD CONSTRAINT "Task_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Review" ADD CONSTRAINT "Review_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Review" ADD CONSTRAINT "Review_propertyId_fkey" FOREIGN KEY ("propertyId") REFERENCES "Property"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -677,3 +752,9 @@ ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UploadedFile" ADD CONSTRAINT "UploadedFile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Integration" ADD CONSTRAINT "Integration_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
