@@ -165,6 +165,14 @@ function LoginForm() {
             Password: Demo@123
           </p>
         </div>
+        <div>
+          <p className="font-medium">Demo Tenant</p>
+          <p className="text-muted-foreground mt-1">
+            Email: john.smith@example.com
+            <br />
+            Password: Tenant@123
+          </p>
+        </div>
       </div>
     </>
   );

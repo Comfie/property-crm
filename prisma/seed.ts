@@ -9,39 +9,41 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  // Create super admin user
-  const adminHashedPassword = await bcrypt.hash('Admin@123', 10);
+  console.log('🌱 Starting seed...');
 
-  const superAdmin = await prisma.user.upsert({
+  // --- 1. SETUP USERS (Login Accounts) ---
+
+  const landlordPassword = await bcrypt.hash('Demo@123', 10);
+  const tenantPassword = await bcrypt.hash('Tenant@123', 10);
+  const adminPassword = await bcrypt.hash('Admin@123', 10);
+
+  // Super Admin
+  await prisma.user.upsert({
     where: { email: 'admin@propertycrm.com' },
     update: {},
     create: {
       email: 'admin@propertycrm.com',
-      password: adminHashedPassword,
+      password: adminPassword,
       firstName: 'Super',
       lastName: 'Admin',
-      phone: '+27800000000',
       role: 'SUPER_ADMIN',
       subscriptionTier: SubscriptionTier.ENTERPRISE,
       subscriptionStatus: 'ACTIVE',
       emailVerified: true,
-      propertyLimit: 0,
     },
   });
 
-  // Create demo user
-  const hashedPassword = await bcrypt.hash('Demo@123', 10);
-
-  const user = await prisma.user.upsert({
+  // Landlord (The "Customer")
+  const landlordUser = await prisma.user.upsert({
     where: { email: 'demo@propertycrm.com' },
     update: {},
     create: {
       email: 'demo@propertycrm.com',
-      password: hashedPassword,
+      password: landlordPassword,
       firstName: 'Demo',
       lastName: 'User',
-      phone: '+27821234567',
       role: 'CUSTOMER',
+      accountType: 'INDIVIDUAL',
       subscriptionTier: SubscriptionTier.PROFESSIONAL,
       subscriptionStatus: 'ACTIVE',
       emailVerified: true,
@@ -49,31 +51,74 @@ async function main() {
     },
   });
 
-  // Delete existing sample data to avoid conflicts
-  await prisma.booking.deleteMany({
-    where: { userId: user.id },
-  });
-  await prisma.inquiry.deleteMany({
-    where: { userId: user.id },
-  });
-  await prisma.maintenanceRequest.deleteMany({
-    where: { userId: user.id },
-  });
-  await prisma.task.deleteMany({
-    where: { userId: user.id },
-  });
-  await prisma.tenant.deleteMany({
-    where: { userId: user.id },
-  });
-  await prisma.property.deleteMany({
-    where: { userId: user.id },
+  // Tenant (The Login Account)
+  // This creates the ability to log in, but doesn't contain the "Tenant Profile" data yet
+  await prisma.user.upsert({
+    where: { email: 'john.smith@example.com' },
+    update: {},
+    create: {
+      email: 'john.smith@example.com',
+      password: tenantPassword,
+      firstName: 'John',
+      lastName: 'Smith',
+      role: 'TENANT',
+      accountType: 'TENANT',
+      subscriptionTier: SubscriptionTier.FREE,
+      subscriptionStatus: 'ACTIVE',
+      emailVerified: true,
+    },
   });
 
-  // Create sample properties
+  // --- 2. CLEANUP OLD DATA ---
+  // We delete children first to satisfy Foreign Key constraints
+  console.log('🧹 Cleaning up...');
+
+  const landlordId = landlordUser.id;
+
+  // Delete items owned by the landlord
+  await prisma.booking.deleteMany({ where: { userId: landlordId } });
+  await prisma.inquiry.deleteMany({ where: { userId: landlordId } });
+  await prisma.maintenanceRequest.deleteMany({ where: { userId: landlordId } });
+  await prisma.task.deleteMany({ where: { userId: landlordId } });
+  await prisma.tenant.deleteMany({ where: { userId: landlordId } }); // Deletes the Tenant Profiles
+  await prisma.property.deleteMany({ where: { userId: landlordId } });
+
+  console.log('🏗️ Creating Properties...');
+
+  // --- 3. CREATE PROPERTIES ---
+
   const property1 = await prisma.property.create({
     data: {
-      userId: user.id,
+      userId: landlordId,
       name: 'Modern 2BR Apartment in Sandton',
+      description:
+        'Spacious family home with a beautiful garden. Close to schools, shopping centers, and the beach. Ideal for long-term family rentals.',
+      propertyType: 'HOUSE',
+      address: '45 Ocean View Road',
+      city: 'Durban',
+      province: 'KwaZulu-Natal',
+      postalCode: '4051',
+      country: 'South Africa',
+      bedrooms: 3,
+      bathrooms: 2,
+      size: 180,
+      furnished: false,
+      parkingSpaces: 2,
+      rentalType: 'LONG_TERM',
+      monthlyRent: 12000,
+      securityDeposit: 24000,
+      amenities: ['garden', 'garage', 'security', 'pool'],
+      isAvailable: true,
+      petsAllowed: true,
+      smokingAllowed: false,
+      status: 'ACTIVE',
+    },
+  });
+
+  const property2 = await prisma.property.create({
+    data: {
+      userId: landlordId,
+      name: 'Cozy 3BR Family Home',
       description:
         'Beautiful modern apartment with stunning city views. Perfect for business travelers and tourists looking for a comfortable stay in the heart of Sandton.',
       propertyType: 'APARTMENT',
@@ -105,115 +150,71 @@ async function main() {
     },
   });
 
-  const property2 = await prisma.property.create({
-    data: {
-      userId: user.id,
-      name: 'Cozy 3BR Family Home in Durban North',
-      description:
-        'Spacious family home with a beautiful garden. Close to schools, shopping centers, and the beach. Ideal for long-term family rentals.',
-      propertyType: 'HOUSE',
-      address: '45 Ocean View Road',
-      city: 'Durban',
-      province: 'KwaZulu-Natal',
-      postalCode: '4051',
-      country: 'South Africa',
-      bedrooms: 3,
-      bathrooms: 2,
-      size: 180,
-      furnished: false,
-      parkingSpaces: 2,
-      rentalType: 'LONG_TERM',
-      monthlyRent: 12000,
-      securityDeposit: 24000,
-      amenities: ['garden', 'garage', 'security', 'pool'],
-      isAvailable: true,
-      petsAllowed: true,
-      smokingAllowed: false,
-      status: 'ACTIVE',
-    },
-  });
+  console.log('👤 Creating Tenant Profile...');
 
-  // Create sample tenant
-  const tenant = await prisma.tenant.create({
+  // --- 4. CREATE TENANT PROFILE ---
+
+  // This is the record defined in your Schema.
+  // It belongs to the Landlord (userId = landlordId).
+  // It links to the Tenant Login via the 'email' string.
+  const tenantProfile = await prisma.tenant.create({
     data: {
-      userId: user.id,
+      userId: landlordId, // IMPORTANT: This links the tenant to the Landlord's dashboard
       firstName: 'John',
       lastName: 'Smith',
-      email: 'john.smith@example.com',
+      email: 'john.smith@example.com', // IMPORTANT: This matches the User Login email
       phone: '+27829876543',
       idNumber: '8501015800086',
       dateOfBirth: new Date('1985-01-01'),
-      currentAddress: '78 Main Street',
-      city: 'Cape Town',
-      province: 'Western Cape',
-      postalCode: '8001',
       employmentStatus: 'EMPLOYED',
-      employer: 'Tech Solutions SA',
-      employerPhone: '+27214567890',
       monthlyIncome: 45000,
-      emergencyContactName: 'Jane Smith',
-      emergencyContactPhone: '+27821112222',
-      emergencyContactRelation: 'Spouse',
       tenantType: 'TENANT',
       status: 'ACTIVE',
     },
   });
 
-  // Create a booking
-  const booking = await prisma.booking.create({
+  console.log('📅 Creating Bookings & Maintenance...');
+
+  // --- 5. CREATE RELATIONS (Booking & Maintenance) ---
+
+  // Create a Booking linked to BOTH the Landlord and the Tenant Profile
+  await prisma.booking.create({
     data: {
-      userId: user.id,
-      propertyId: property1.id,
+      userId: landlordId, // Belongs to Landlord
+      propertyId: property1.id, // Relates to Property
+      tenantId: tenantProfile.id, // *** CRITICAL: Links to the Tenant Profile we just created
+
       bookingReference: 'BK-2024-001',
       bookingType: 'SHORT_TERM',
       checkInDate: new Date('2024-12-20'),
       checkOutDate: new Date('2024-12-27'),
       numberOfNights: 7,
-      guestName: 'Sarah Johnson',
-      guestEmail: 'sarah.j@example.com',
-      guestPhone: '+27831234567',
+
+      // Guest details (redundant but often kept for historical records)
+      guestName: 'John Smith',
+      guestEmail: 'john.smith@example.com',
+      guestPhone: '+27829876543',
       numberOfGuests: 2,
+
       baseRate: 5600,
-      cleaningFee: 350,
-      serviceFee: 500,
       totalAmount: 6450,
       amountPaid: 6450,
       amountDue: 0,
       paymentStatus: 'PAID',
       paymentMethod: 'CREDIT_CARD',
-      bookingSource: 'DIRECT',
       status: 'CONFIRMED',
     },
   });
 
-  // Create an inquiry
-  await prisma.inquiry.create({
-    data: {
-      userId: user.id,
-      propertyId: property1.id,
-      inquirySource: 'WEBSITE',
-      inquiryType: 'BOOKING',
-      contactName: 'Michael Brown',
-      contactEmail: 'michael.b@example.com',
-      contactPhone: '+27847654321',
-      message:
-        "Hi, I'm interested in booking your Sandton apartment for a week in January. Is it available from the 15th to the 22nd?",
-      checkInDate: new Date('2025-01-15'),
-      checkOutDate: new Date('2025-01-22'),
-      numberOfGuests: 3,
-      status: 'NEW',
-      priority: 'NORMAL',
-    },
-  });
-
-  // Create a maintenance request
+  // Create a Maintenance Request linked to the Tenant
   await prisma.maintenanceRequest.create({
     data: {
-      userId: user.id,
-      propertyId: property2.id,
+      userId: landlordId,
+      propertyId: property2.id, // Assuming he rents this one too, or just reporting it
+      tenantId: tenantProfile.id, // *** CRITICAL: Links to Tenant Profile
+
       title: 'Leaking tap in main bathroom',
-      description:
-        'The hot water tap in the main bathroom has been leaking for the past few days. It needs to be replaced or repaired.',
+      description: 'Hot water tap leaking...',
       category: 'PLUMBING',
       priority: 'NORMAL',
       location: 'Main Bathroom',
@@ -222,49 +223,25 @@ async function main() {
     },
   });
 
-  // Create sample tasks
-  await prisma.task.createMany({
-    data: [
-      {
-        userId: user.id,
-        title: 'Follow up with Michael Brown',
-        description: 'Follow up on the January booking inquiry',
-        taskType: 'FOLLOW_UP',
-        priority: 'HIGH',
-        dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
-        status: 'TODO',
-      },
-      {
-        userId: user.id,
-        title: 'Prepare check-in for Sarah Johnson',
-        description: 'Prepare welcome package and check-in instructions',
-        taskType: 'CHECK_IN',
-        priority: 'NORMAL',
-        dueDate: new Date('2024-12-20'),
-        status: 'TODO',
-      },
-    ],
+  // Create Inquiry (Unlinked to tenant profile, just a stranger)
+  await prisma.inquiry.create({
+    data: {
+      userId: landlordId,
+      propertyId: property1.id,
+      inquirySource: 'WEBSITE',
+      inquiryType: 'BOOKING',
+      contactName: 'Michael Brown',
+      contactEmail: 'michael.b@example.com',
+      contactPhone: '+27847654321',
+      message: 'Is this available?',
+      checkInDate: new Date('2025-01-15'),
+      checkOutDate: new Date('2025-01-22'),
+      numberOfGuests: 3,
+      status: 'NEW',
+    },
   });
 
-  console.log('Database seeded successfully!');
-  console.log('');
-  console.log('Super Admin Credentials:');
-  console.log('Email: admin@propertycrm.com');
-  console.log('Password: Admin@123');
-  console.log('');
-  console.log('Demo Landlord Credentials:');
-  console.log('Email: demo@propertycrm.com');
-  console.log('Password: Demo@123');
-  console.log('');
-  console.log('Created:');
-  console.log(`- 1 Super Admin User`);
-  console.log(`- 1 Demo Landlord User`);
-  console.log(`- 2 Properties`);
-  console.log(`- 1 Tenant`);
-  console.log(`- 1 Booking`);
-  console.log(`- 1 Inquiry`);
-  console.log(`- 1 Maintenance Request`);
-  console.log(`- 2 Tasks`);
+  console.log('✅ Database seeded successfully!');
 }
 
 main()
