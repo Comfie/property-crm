@@ -16,10 +16,10 @@ const envSchema = z.object({
   NEXTAUTH_URL: z.string().url('NEXTAUTH_URL must be a valid URL').optional(),
 
   // AWS S3
-  AWS_ACCESS_KEY_ID: z.string().min(16, 'AWS_ACCESS_KEY_ID is required'),
-  AWS_SECRET_ACCESS_KEY: z.string().min(32, 'AWS_SECRET_ACCESS_KEY is required'),
-  AWS_S3_BUCKET: z.string().min(3, 'AWS_S3_BUCKET is required'),
-  AWS_REGION: z.string().default('us-east-1'),
+  // AWS_ACCESS_KEY_ID: z.string().min(16, 'AWS_ACCESS_KEY_ID is required'),
+  // AWS_SECRET_ACCESS_KEY: z.string().min(32, 'AWS_SECRET_ACCESS_KEY is required'),
+  // AWS_S3_BUCKET: z.string().min(3, 'AWS_S3_BUCKET is required'),
+  // AWS_REGION: z.string().default('us-east-1'),
 
   // Email (Optional - for SMTP)
   SMTP_HOST: z.string().optional(),
