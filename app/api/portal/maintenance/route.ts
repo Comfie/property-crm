@@ -84,12 +84,14 @@ export async function POST(request: Request) {
 
     // Send notification to property manager
     try {
-      await notifyMaintenanceRequest(
-        activeProperty.property.userId,
-        validatedData.title,
-        activeProperty.property.name,
-        maintenanceRequest.id
-      );
+      if (activeProperty) {
+        await notifyMaintenanceRequest(
+          activeProperty.property.userId,
+          validatedData.title,
+          activeProperty.property.name,
+          maintenanceRequest.id
+        );
+      }
     } catch (notificationError) {
       console.error('Failed to send notification:', notificationError);
       // Don't fail the request if notification fails
@@ -102,7 +104,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+      return NextResponse.json({ error: error.issues[0]?.message }, { status: 400 });
     }
     console.error('Tenant maintenance request error:', error);
     return NextResponse.json({ error: 'Failed to submit maintenance request' }, { status: 500 });

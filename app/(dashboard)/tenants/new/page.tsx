@@ -118,23 +118,29 @@ function NewTenantForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
+
+  const propertyIdFromUrl = searchParams.get('propertyId');
+  const leaseStartFromUrl = searchParams.get('leaseStartDate');
+  const leaseEndFromUrl = searchParams.get('leaseEndDate');
+
   const [createPortalAccess, setCreatePortalAccess] = useState(false);
-  const [assignProperty, setAssignProperty] = useState(false);
-  const [leaseStartDate, setLeaseStartDate] = useState('');
-  const [leaseEndDate, setLeaseEndDate] = useState('');
+  const [assignProperty, setAssignProperty] = useState(!!propertyIdFromUrl);
+  const [leaseStartDate, setLeaseStartDate] = useState(leaseStartFromUrl || '');
+  const [leaseEndDate, setLeaseEndDate] = useState(leaseEndFromUrl || '');
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
     setValue,
   } = useForm<TenantFormData>({
     resolver: zodResolver(tenantSchema),
     defaultValues: {
       tenantType: 'TENANT',
       createPortalAccess: false,
-      assignProperty: false,
+      assignProperty: !!propertyIdFromUrl,
+      leaseStartDate: leaseStartFromUrl || '',
+      leaseEndDate: leaseEndFromUrl || '',
     },
   });
 
@@ -144,7 +150,7 @@ function NewTenantForm() {
     const lastName = searchParams.get('lastName');
     const email = searchParams.get('email');
     const phone = searchParams.get('phone');
-    const propertyId = searchParams.get('propertyId');
+    // propertyIdFromUrl is already defined above
     const leaseStart = searchParams.get('leaseStartDate');
     const leaseEnd = searchParams.get('leaseEndDate');
 
@@ -153,24 +159,20 @@ function NewTenantForm() {
     if (email) setValue('email', email);
     if (phone) setValue('phone', phone);
 
-    // If property info is provided, enable property assignment
-    if (propertyId) {
-      setAssignProperty(true);
+    if (propertyIdFromUrl) {
       setValue('assignProperty', true);
-      setValue('propertyId', propertyId);
+      setValue('propertyId', propertyIdFromUrl);
     }
 
     if (leaseStart) {
-      setLeaseStartDate(leaseStart);
       setValue('leaseStartDate', leaseStart);
       setValue('propertyMoveInDate', leaseStart);
     }
 
     if (leaseEnd) {
-      setLeaseEndDate(leaseEnd);
       setValue('leaseEndDate', leaseEnd);
     }
-  }, [searchParams, setValue]);
+  }, [searchParams, setValue, propertyIdFromUrl]);
 
   const { data: availableProperties, isLoading: isLoadingProperties } = useQuery({
     queryKey: ['available-properties', leaseStartDate, leaseEndDate],

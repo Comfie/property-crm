@@ -17,7 +17,6 @@ import {
   Shield,
   HelpCircle,
   BookOpen,
-  ChevronRight,
   Mail,
   CheckSquare,
   Receipt,
@@ -180,7 +179,7 @@ export default function DocumentationPage() {
                 <CardContent className="docs-content space-y-4">
                   <p>
                     The dashboard is your central hub for monitoring all property management
-                    activities. It provides a quick overview of your portfolio's performance.
+                    activities. It provides a quick overview of your portfolios performance.
                   </p>
 
                   <h4>Dashboard Components:</h4>

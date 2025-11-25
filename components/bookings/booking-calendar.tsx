@@ -143,8 +143,8 @@ export function BookingCalendar({
     const colors = statusColors[event.status] || statusColors.PENDING;
     return {
       style: {
-        backgroundColor: colors.bg,
-        borderLeft: `4px solid ${colors.border}`,
+        backgroundColor: colors?.bg,
+        borderLeft: `4px solid ${colors?.border}`,
         color: '#1f2937',
         borderRadius: '4px',
         padding: '2px 4px',

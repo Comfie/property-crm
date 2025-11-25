@@ -102,13 +102,13 @@ export async function GET(request: Request) {
     // Aggregate income by month
     payments.forEach((payment: (typeof payments)[number]) => {
       const month = new Date(payment.paymentDate).getMonth();
-      monthlyData[month].income += Number(payment.amount);
+      monthlyData[month]!.income += Number(payment.amount);
     });
 
     // Aggregate expenses by month
     expenses.forEach((expense: (typeof expenses)[number]) => {
       const month = new Date(expense.expenseDate).getMonth();
-      monthlyData[month].expenses += Number(expense.amount);
+      monthlyData[month]!.expenses += Number(expense.amount);
     });
 
     // Add maintenance costs to monthly expenses
@@ -117,7 +117,7 @@ export async function GET(request: Request) {
         const month = new Date(maintenance.completedDate).getMonth();
         const cost = maintenance.actualCost || maintenance.estimatedCost;
         if (cost) {
-          monthlyData[month].expenses += Number(cost);
+          monthlyData[month]!.expenses += Number(cost);
         }
       }
     });

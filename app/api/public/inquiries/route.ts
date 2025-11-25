@@ -88,7 +88,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+      return NextResponse.json({ error: error.issues[0]?.message }, { status: 400 });
     }
     console.error('Public inquiry error:', error);
     return NextResponse.json({ error: 'Failed to submit inquiry' }, { status: 500 });

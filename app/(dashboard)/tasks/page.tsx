@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   CheckSquare,
@@ -47,7 +47,6 @@ async function fetchTasks(params: { status?: string; priority?: string; taskType
 }
 
 export default function TasksPage() {
-  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('all');
   const [priority, setPriority] = useState('');
   const [taskType, setTaskType] = useState('');
@@ -66,20 +65,20 @@ export default function TasksPage() {
   });
 
   // Quick status update mutation
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      });
-      if (!response.ok) throw new Error('Failed to update task');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-    },
-  });
+  // const updateStatusMutation = useMutation({
+  //   mutationFn: async ({ id, status }: { id: string; status: string }) => {
+  //     const response = await fetch(`/api/tasks/${id}`, {
+  //       method: 'PUT',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ status }),
+  //     });
+  //     if (!response.ok) throw new Error('Failed to update task');
+  //     return response.json();
+  //   },
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ['tasks'] });
+  //   },
+  // });
 
   // Filter tasks by search term
   const filteredTasks = data?.tasks?.filter((task: Task) =>

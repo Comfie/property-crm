@@ -47,7 +47,11 @@ export default function AdminSettingsPage() {
             });
           } else {
             // Fallback to session data if API fails
-            const [firstName, lastName] = session.user.name?.split(' ') || ['', ''];
+            const nameParts = session.user.name?.split(' ') || [];
+
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts[1] || '';
+
             setProfileData({
               firstName,
               lastName,
@@ -57,8 +61,10 @@ export default function AdminSettingsPage() {
           }
         } catch (error) {
           console.error('Failed to fetch user profile:', error);
-          // Fallback to session data
-          const [firstName, lastName] = session.user.name?.split(' ') || ['', ''];
+          const nameParts = session.user.name?.split(' ') || [];
+          const firstName = nameParts[0] || '';
+          const lastName = nameParts[1] || '';
+
           setProfileData({
             firstName,
             lastName,

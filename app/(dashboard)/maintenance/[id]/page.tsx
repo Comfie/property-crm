@@ -12,7 +12,6 @@ import {
   DollarSign,
   MapPin,
   CheckCircle,
-  Clock,
   PlayCircle,
   XCircle,
   Loader2,

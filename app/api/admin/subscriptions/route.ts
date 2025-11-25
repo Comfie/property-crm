@@ -13,8 +13,6 @@ const updateSubscriptionSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const session = await requireSuperAdmin();
-
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const search = searchParams.get('search');
@@ -227,7 +225,7 @@ export async function PUT(request: Request) {
       return error;
     }
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+      return NextResponse.json({ error: error.issues[0]?.message }, { status: 400 });
     }
     console.error('Error updating subscription:', error);
     return NextResponse.json({ error: 'Failed to update subscription' }, { status: 500 });

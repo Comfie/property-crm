@@ -22,7 +22,6 @@ import {
   PawPrint,
   Cigarette,
   Sofa,
-  Users,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';

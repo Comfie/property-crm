@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { User, Phone, Mail, MoreVertical, Eye, Edit, Trash2, Home, Briefcase } from 'lucide-react';
+import { Phone, Mail, MoreVertical, Eye, Edit, Trash2, Home, Briefcase } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

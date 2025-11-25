@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
     const currentDate = new Date(startDate);
 
     while (currentDate <= endDate) {
-      const dateStr = currentDate.toISOString().split('T')[0];
+      const dateStr = currentDate.toISOString().split('T')[0] ?? '';
 
       const occupiedCount = await prisma.booking.count({
         where: {

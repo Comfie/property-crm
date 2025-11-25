@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
 
 // Note: This requires adding a NotificationPreferences model or JSON field to User
 // For now, we'll use a simple approach with user preferences

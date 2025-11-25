@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Grid, List, Upload, Trash2, LayoutGrid, LayoutList } from 'lucide-react';
+import { Search, Upload, Trash2, LayoutGrid, LayoutList } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Document, DocumentFolder } from '@/types/document';
+import type { Document, DocumentFolder } from '@/types/document';
 import { FolderTree } from '@/components/documents/folder-tree';
 import { DocumentGrid } from '@/components/documents/document-grid';
 import { CreateFolderDialog } from '@/components/documents/create-folder-dialog';
@@ -50,7 +50,7 @@ export default function DocumentsPage() {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
 
   // Fetch folders (landlord's personal folders - no tenantId)
-  const { data: folders = [], isLoading: foldersLoading } = useQuery<DocumentFolder[]>({
+  const { data: folders = [] } = useQuery<DocumentFolder[]>({
     queryKey: ['folders'],
     queryFn: async () => {
       const response = await fetch('/api/folders');
@@ -343,8 +343,8 @@ export default function DocumentsPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Document</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete "{selectedDocument.title}"? This action cannot be
-                  undone.
+                  Are you sure you want to delete &quot;{selectedDocument.title}&quot;? This action
+                  cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

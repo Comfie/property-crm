@@ -83,19 +83,32 @@ export default function OccupancyReportPage() {
     },
   });
 
-  // Fetch occupancy data
   const { data, isLoading } = useQuery<OccupancyData>({
     queryKey: ['occupancy-report', propertyId, startDate, endDate],
     queryFn: async () => {
-      const params = new URLSearchParams({
+      // 1. Create the base object (Type: Record<string, string | undefined>)
+      const dirtyParams = {
         startDate,
         endDate,
+        // Conditionally add propertyId only if it's not 'all'
         ...(propertyId !== 'all' && { propertyId }),
-      });
+      };
+
+      const definedParams = Object.fromEntries(
+        Object.entries(dirtyParams).filter(([, value]) => {
+          // Ensure we only keep values that are defined strings
+          return typeof value === 'string' && value.length > 0;
+        })
+      ) as Record<string, string>;
+      // 3. Pass the clean, correctly typed object to URLSearchParams
+      const params = new URLSearchParams(definedParams);
+
       const response = await fetch(`/api/reports/occupancy?${params}`);
       if (!response.ok) throw new Error('Failed to fetch occupancy report');
       return response.json();
     },
+    // Recommended: Only run the query when required params are defined
+    enabled: !!startDate && !!endDate,
   });
 
   if (isLoading) {

@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import { SubscriptionStatus, SubscriptionTier } from '@prisma/client';
+import type { SubscriptionStatus, SubscriptionTier } from '@prisma/client';
 
 interface SubscriptionBadgeProps {
   tier?: SubscriptionTier;

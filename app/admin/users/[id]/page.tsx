@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SubscriptionTierBadge, SubscriptionStatusBadge } from '@/components/admin';
-import { Separator } from '@/components/ui/separator';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +39,7 @@ import {
   Edit,
   Send,
 } from 'lucide-react';
+import { logger } from '@/lib/shared/logger';
 
 interface UserDetails {
   id: string;
@@ -172,8 +172,6 @@ export default function UserDetailsPage({
         throw new Error(errorData.error || 'Failed to update subscription');
       }
 
-      const updatedUser = await response.json();
-
       toast({
         title: 'Success',
         description: `Subscription updated to ${subscriptionData.subscriptionTier} (${subscriptionData.subscriptionStatus})`,
@@ -212,6 +210,8 @@ export default function UserDetailsPage({
       });
       fetchUserDetails();
     } catch (error) {
+      // Error logging
+      logger.error('Failed to Update', { error });
       toast({
         title: 'Error',
         description: 'Failed to update user status.',
@@ -239,6 +239,8 @@ export default function UserDetailsPage({
       setEmailDialogOpen(false);
       setEmailData({ subject: '', message: '' });
     } catch (error) {
+      // Error logging
+      logger.error('Failed to Send Email', { error });
       toast({
         title: 'Error',
         description: 'Failed to send email. Feature coming soon.',

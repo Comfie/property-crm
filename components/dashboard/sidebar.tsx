@@ -6,7 +6,6 @@ import {
   Building2,
   Calendar,
   Users,
-  MessageSquare,
   Wrench,
   DollarSign,
   FileText,

@@ -146,7 +146,7 @@ export function UploadDocumentDialog({
         throw new Error('File upload failed');
       }
 
-      const uploadedFile = uploadResult[0];
+      const uploadedFile = uploadResult[0]!;
 
       // Create document record with actual file URL
       const documentData: CreateDocumentInput = {

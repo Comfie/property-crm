@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
-import { requireSuperAdmin } from '@/lib/auth-helpers';
 import prisma from '@/lib/db';
 
 export async function GET(request: Request) {
   try {
-    const session = await requireSuperAdmin();
-
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
     const tier = searchParams.get('tier');

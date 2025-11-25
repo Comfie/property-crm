@@ -24,7 +24,7 @@ export async function parseICalFromUrl(url: string): Promise<CalendarEvent[]> {
     const calendarEvents: CalendarEvent[] = [];
 
     for (const key in events) {
-      const event = events[key];
+      const event = events[key]!;
       if (event.type === 'VEVENT' && event.start && event.end) {
         calendarEvents.push({
           uid: event.uid || key,
@@ -232,11 +232,11 @@ export async function checkAvailability(
   });
 
   if (activeTenantLeases.length > 0) {
-    const tenant = activeTenantLeases[0].tenant;
+    const tenant = activeTenantLeases[0]?.tenant;
     return {
       available: false,
       conflicts: [],
-      reason: `Property has an active tenant lease (${tenant.firstName} ${tenant.lastName})`,
+      reason: `Property has an active tenant lease (${tenant?.firstName} ${tenant?.lastName})`,
     };
   }
 
@@ -287,7 +287,7 @@ export async function checkAvailability(
  * Format date for iCal (YYYYMMDD)
  */
 function formatICalDate(date: Date): string {
-  return date.toISOString().split('T')[0].replace(/-/g, '');
+  return date.toISOString().split('T')[0]!.replace(/-/g, '');
 }
 
 /**

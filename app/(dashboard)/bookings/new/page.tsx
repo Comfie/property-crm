@@ -133,8 +133,6 @@ export default function NewBookingPage() {
     createMutation.mutate(data);
   };
 
-  const selectedProperty = properties?.find((p: { id: string }) => p.id === propertyId);
-
   return (
     <div className="space-y-6">
       <PageHeader title="Add New Booking" description="Create a new reservation">

@@ -68,7 +68,7 @@ export async function PUT(request: Request) {
       return error;
     }
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+      return NextResponse.json({ error: error.issues[0]?.message }, { status: 400 });
     }
     console.error('Error changing password:', error);
     return NextResponse.json({ error: 'Failed to change password' }, { status: 500 });

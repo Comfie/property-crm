@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bell, Mail, MessageSquare, Smartphone, Save } from 'lucide-react';
+import { Mail, MessageSquare, Smartphone, Save } from 'lucide-react';
 
 import { PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';

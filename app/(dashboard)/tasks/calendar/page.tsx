@@ -78,7 +78,7 @@ export default function TaskCalendarPage() {
   const tasksByDate: Record<string, Task[]> = {};
   tasksWithDueDates.forEach((task: Task) => {
     if (task.dueDate) {
-      const dateKey = new Date(task.dueDate).toISOString().split('T')[0];
+      const dateKey = new Date(task.dueDate).toISOString().split('T')[0]!;
       if (!tasksByDate[dateKey]) {
         tasksByDate[dateKey] = [];
       }
@@ -192,9 +192,8 @@ export default function TaskCalendarPage() {
               {/* Calendar grid */}
               <div className="grid grid-cols-7">
                 {calendarDays.map((date, index) => {
-                  const dateKey = date.toISOString().split('T')[0];
+                  const dateKey = date.toISOString().split('T')[0]!;
                   const dayTasks = tasksByDate[dateKey] || [];
-                  const isPast = date < new Date(new Date().setHours(0, 0, 0, 0));
 
                   return (
                     <div
@@ -211,7 +210,7 @@ export default function TaskCalendarPage() {
                         {date.getDate()}
                       </div>
                       <div className="space-y-1">
-                        {dayTasks.slice(0, 3).map((task) => (
+                        {dayTasks.slice(0, 3).map((task: Task) => (
                           <Link key={task.id} href={`/tasks/${task.id}`}>
                             <div
                               className={`flex items-center gap-1 rounded p-1 text-xs hover:bg-gray-100 ${

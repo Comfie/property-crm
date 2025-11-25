@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { bookingId, amount, email, callbackUrl } = await request.json();
+    const { bookingId, amount, email } = await request.json();
 
     if (!bookingId || !amount || !email) {
       return NextResponse.json(

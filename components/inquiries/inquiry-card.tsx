@@ -9,7 +9,6 @@ import {
   Calendar,
   Users,
   MessageSquare,
-  AlertCircle,
 } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';

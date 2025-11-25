@@ -4,8 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, List, Calendar as CalendarIcon } from 'lucide-react';
-import { SlotInfo } from 'react-big-calendar';
+import { Plus, List } from 'lucide-react';
+import type { SlotInfo } from 'react-big-calendar';
 
 import { PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';

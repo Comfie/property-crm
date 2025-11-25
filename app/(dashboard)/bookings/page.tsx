@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Calendar, Filter, CalendarDays } from 'lucide-react';
+import { Plus, Search, Calendar, CalendarDays } from 'lucide-react';
 
 import { PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';

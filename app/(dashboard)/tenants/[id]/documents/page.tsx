@@ -1,14 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Upload,
   Search,
   Grid3x3,
   List,
-  FolderPlus,
   Download,
   Trash2,
   Home,
@@ -31,7 +30,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { FolderTree } from '@/components/documents/folder-tree';
 import { DocumentGrid } from '@/components/documents/document-grid';
-import { DocumentFolder, Document } from '@/types/document';
+import type { DocumentFolder, Document } from '@/types/document';
 import { CreateFolderDialog } from '@/components/documents/create-folder-dialog';
 import { EditFolderDialog } from '@/components/documents/edit-folder-dialog';
 import { DeleteFolderDialog } from '@/components/documents/delete-folder-dialog';
@@ -57,7 +56,6 @@ interface Tenant {
 
 export default function TenantDocumentsPage() {
   const params = useParams();
-  const router = useRouter();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const tenantId = params.id as string;

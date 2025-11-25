@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
+import { Booking, Property } from '@prisma/client';
 
 export async function GET(request: Request) {
   try {
@@ -62,7 +63,7 @@ export async function GET(request: Request) {
     });
 
     // Filter properties based on availability criteria
-    const availableProperties = properties.filter((property) => {
+    const availableProperties = properties.filter((property: Property) => {
       // Criteria 1: No active tenant assignments
       if (property.tenants.length > 0) {
         return false;
@@ -73,7 +74,7 @@ export async function GET(request: Request) {
         const leaseStart = new Date(startDate);
         const leaseEnd = endDate ? new Date(endDate) : null;
 
-        const hasOverlap = property.bookings.some((booking) => {
+        const hasOverlap = property.bookings.some((booking: Booking) => {
           const bookingStart = new Date(booking.checkInDate);
           const bookingEnd = new Date(booking.checkOutDate);
 

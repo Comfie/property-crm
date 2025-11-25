@@ -14,7 +14,6 @@ import {
   Calendar,
   Home,
   CreditCard,
-  AlertCircle,
   Shield,
   Key,
   CheckCircle,
@@ -125,7 +124,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
     queryFn: () => fetchTenant(id),
   });
 
-  const { data: portalAccess, isLoading: isLoadingAccess } = useQuery({
+  const { data: portalAccess } = useQuery({
     queryKey: ['tenant-portal-access', id],
     queryFn: () => fetchPortalAccess(id),
   });
