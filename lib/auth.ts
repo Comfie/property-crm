@@ -63,12 +63,70 @@ export const authOptions: NextAuthOptions = {
     error: '/login',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session: updateSession }) {
+      // Initial sign in - set default organization to user's own workspace
       if (user) {
         token.id = user.id;
         token.accountType = user.accountType;
         token.role = user.role;
+        token.organizationId = user.id; // Default: user's own workspace
+        token.isTeamMember = false;
+
+        // Fetch user's name for organization display
+        const userRecord = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { firstName: true, lastName: true },
+        });
+
+        if (userRecord) {
+          token.organizationName = `${userRecord.firstName} ${userRecord.lastName}`;
+        }
       }
+
+      // Handle organization switching (triggered by update)
+      if (trigger === 'update' && updateSession?.organizationId) {
+        const newOrgId = updateSession.organizationId as string;
+
+        // If switching to own workspace
+        if (newOrgId === token.id) {
+          token.organizationId = newOrgId;
+          token.isTeamMember = false;
+
+          const userRecord = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { firstName: true, lastName: true },
+          });
+
+          if (userRecord) {
+            token.organizationName = `${userRecord.firstName} ${userRecord.lastName}`;
+          }
+        } else {
+          // Switching to another organization - verify team membership
+          const teamMember = await prisma.teamMember.findFirst({
+            where: {
+              userId: newOrgId,
+              email: token.email as string,
+              status: 'ACCEPTED',
+            },
+            include: {
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+          });
+
+          if (teamMember) {
+            token.organizationId = newOrgId;
+            token.isTeamMember = true;
+            token.organizationName = `${teamMember.user.firstName} ${teamMember.user.lastName}`;
+          }
+          // If verification fails, keep current organization (don't switch)
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -76,6 +134,9 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.accountType = token.accountType as string;
         session.user.role = token.role;
+        session.user.organizationId = token.organizationId as string;
+        session.user.organizationName = token.organizationName;
+        session.user.isTeamMember = token.isTeamMember;
       }
       return session;
     },

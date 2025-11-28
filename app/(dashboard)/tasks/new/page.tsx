@@ -288,11 +288,12 @@ export default function NewTaskPage() {
                       <SelectValue placeholder="Select property" />
                     </SelectTrigger>
                     <SelectContent>
-                      {propertiesData?.properties?.map((property: { id: string; name: string }) => (
-                        <SelectItem key={property.id} value={property.id}>
-                          {property.name}
-                        </SelectItem>
-                      ))}
+                      {Array.isArray(propertiesData) &&
+                        propertiesData.map((property: { id: string; name: string }) => (
+                          <SelectItem key={property.id} value={property.id}>
+                            {property.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -306,17 +307,18 @@ export default function NewTaskPage() {
                       <SelectValue placeholder="Select booking" />
                     </SelectTrigger>
                     <SelectContent>
-                      {bookingsData?.bookings?.map(
-                        (booking: {
-                          id: string;
-                          guestName: string;
-                          property?: { name: string };
-                        }) => (
-                          <SelectItem key={booking.id} value={booking.id}>
-                            {booking.guestName} - {booking.property?.name || 'Unknown Property'}
-                          </SelectItem>
-                        )
-                      )}
+                      {Array.isArray(bookingsData) &&
+                        bookingsData.map(
+                          (booking: {
+                            id: string;
+                            guestName: string;
+                            property?: { name: string };
+                          }) => (
+                            <SelectItem key={booking.id} value={booking.id}>
+                              {booking.guestName} - {booking.property?.name || 'Unknown Property'}
+                            </SelectItem>
+                          )
+                        )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -330,13 +332,14 @@ export default function NewTaskPage() {
                       <SelectValue placeholder="Select tenant" />
                     </SelectTrigger>
                     <SelectContent>
-                      {tenantsData?.tenants?.map(
-                        (tenant: { id: string; firstName: string; lastName: string }) => (
-                          <SelectItem key={tenant.id} value={tenant.id}>
-                            {tenant.firstName} {tenant.lastName}
-                          </SelectItem>
-                        )
-                      )}
+                      {Array.isArray(tenantsData) &&
+                        tenantsData.map(
+                          (tenant: { id: string; firstName: string; lastName: string }) => (
+                            <SelectItem key={tenant.id} value={tenant.id}>
+                              {tenant.firstName} {tenant.lastName}
+                            </SelectItem>
+                          )
+                        )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -350,11 +353,12 @@ export default function NewTaskPage() {
                       <SelectValue placeholder="Select maintenance request" />
                     </SelectTrigger>
                     <SelectContent>
-                      {maintenanceData?.requests?.map((request: { id: string; title: string }) => (
-                        <SelectItem key={request.id} value={request.id}>
-                          {request.title}
-                        </SelectItem>
-                      ))}
+                      {Array.isArray(maintenanceData) &&
+                        maintenanceData.map((request: { id: string; title: string }) => (
+                          <SelectItem key={request.id} value={request.id}>
+                            {request.title}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
