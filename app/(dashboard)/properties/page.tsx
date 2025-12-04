@@ -7,6 +7,7 @@ import { Plus, Search, Filter, Grid3X3, List, Building2 } from 'lucide-react';
 
 import { PageHeader, EmptyState } from '@/components/shared';
 import { PropertyCard } from '@/components/properties/property-card';
+import { ImportPropertiesDialog } from '@/components/properties/import-properties-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -83,12 +84,15 @@ export default function PropertiesPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Properties" description="Manage your rental properties">
-        <Button asChild>
-          <Link href="/properties/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Property
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ImportPropertiesDialog />
+          <Button asChild>
+            <Link href="/properties/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Property
+            </Link>
+          </Button>
+        </div>
       </PageHeader>
 
       {/* Filters & Search */}

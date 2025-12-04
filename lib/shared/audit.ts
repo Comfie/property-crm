@@ -5,7 +5,14 @@ import { logger } from '@/lib/shared/logger';
 /**
  * Audit log actions
  */
-export type AuditAction = 'created' | 'updated' | 'deleted' | 'viewed' | 'exported' | 'imported';
+export type AuditAction =
+  | 'created'
+  | 'updated'
+  | 'deleted'
+  | 'viewed'
+  | 'exported'
+  | 'imported'
+  | 'bulk_imported';
 
 /**
  * Audit log entity types

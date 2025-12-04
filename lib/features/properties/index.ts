@@ -17,10 +17,12 @@ export {
   propertyIdSchema,
   updateStatusSchema,
   updateAvailabilitySchema,
+  bulkImportPropertiesSchema,
   type CreatePropertyDTO,
   type UpdatePropertyDTO,
   type ListPropertiesDTO,
   type PropertyIdDTO,
   type UpdateStatusDTO,
   type UpdateAvailabilityDTO,
+  type BulkImportPropertiesDTO,
 } from './dtos/property.dto';

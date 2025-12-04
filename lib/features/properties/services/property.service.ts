@@ -285,6 +285,75 @@ export class PropertyService {
 
     return updated;
   }
+
+  /**
+   * Bulk import properties
+   * Returns summary of successful and failed imports
+   */
+  async bulkImport(
+    userId: string,
+    properties: Array<Parameters<typeof this.create>[1]>,
+    skipErrors = false
+  ) {
+    const results = {
+      total: properties.length,
+      successful: 0,
+      failed: 0,
+      errors: [] as Array<{ index: number; property: string; error: string }>,
+      createdProperties: [] as Array<{ id: string; name: string }>,
+    };
+
+    for (let i = 0; i < properties.length; i++) {
+      const propertyData = properties[i];
+
+      try {
+        const created = await this.create(userId, propertyData);
+        results.successful++;
+        results.createdProperties.push({
+          id: created.id,
+          name: created.name,
+        });
+
+        logger.info('Property imported successfully', {
+          index: i + 1,
+          propertyName: propertyData.name,
+          userId,
+        });
+      } catch (error) {
+        results.failed++;
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        results.errors.push({
+          index: i + 1,
+          property: propertyData.name || `Property ${i + 1}`,
+          error: errorMessage,
+        });
+
+        logger.error('Property import failed', {
+          index: i + 1,
+          propertyName: propertyData.name,
+          userId,
+          error: errorMessage,
+        });
+
+        // If skipErrors is false, stop processing and throw error
+        if (!skipErrors) {
+          throw new ValidationError(`Failed to import property at row ${i + 1}: ${errorMessage}`, {
+            failedProperty: propertyData.name,
+            errorDetails: results.errors,
+          });
+        }
+      }
+    }
+
+    logger.info('Bulk import completed', {
+      userId,
+      total: results.total,
+      successful: results.successful,
+      failed: results.failed,
+    });
+
+    return results;
+  }
 }
 
 // Export singleton instance

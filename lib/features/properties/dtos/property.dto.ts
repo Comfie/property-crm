@@ -99,6 +99,16 @@ export const propertyIdSchema = z.object({
   id: z.string().min(1, 'Property ID is required'),
 });
 
+/**
+ * Bulk Import Properties DTO
+ */
+export const bulkImportPropertiesSchema = z.object({
+  properties: z.array(createPropertySchema).min(1, 'At least one property is required'),
+  skipErrors: z.boolean().optional().default(false), // Continue importing even if some fail
+});
+
+export type BulkImportPropertiesDTO = z.infer<typeof bulkImportPropertiesSchema>;
+
 export type PropertyIdDTO = z.infer<typeof propertyIdSchema>;
 
 /**

@@ -87,7 +87,8 @@ export default withAuth(
           pathname.startsWith('/forgot-password') ||
           pathname.startsWith('/verify-email') ||
           pathname.startsWith('/api/auth') ||
-          pathname.startsWith('/api/public')
+          pathname.startsWith('/api/public') ||
+          pathname.startsWith('/mockups')
         ) {
           return true;
         }

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Building2,
   CheckCircle2,
@@ -25,6 +26,10 @@ import {
   ChevronDown,
   ChevronUp,
   PlayCircle,
+  TrendingUp,
+  Clock,
+  Download,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from './components/Button';
 import { Card } from './components/Card';
@@ -224,9 +229,18 @@ export default function App() {
 
   return (
     <div className="selection:bg-brand-200 min-h-screen bg-slate-50 font-sans text-slate-900">
+      {/* Promotional Banner */}
+      <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 py-2.5 text-center text-sm font-semibold text-white">
+        <div className="flex items-center justify-center gap-2">
+          <Sparkles className="h-4 w-4" />
+          <span>Launch Special: Get 50% Off Your First 3 Months - Limited Time Only!</span>
+          <Sparkles className="h-4 w-4" />
+        </div>
+      </div>
+
       {/* Navigation */}
       <header
-        className={`fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${scrolled ? 'border-b border-slate-200 bg-white/90 shadow-sm backdrop-blur-md' : 'bg-transparent'}`}
+        className={`fixed top-10 right-0 left-0 z-50 transition-all duration-300 ${scrolled ? 'border-b border-slate-200 bg-white/90 shadow-sm backdrop-blur-md' : 'bg-transparent'}`}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
@@ -324,6 +338,18 @@ export default function App() {
         <div
           className={`relative z-10 mx-auto max-w-7xl transform px-4 text-center transition-all duration-1000 ease-out sm:px-6 lg:px-8 ${heroLoaded ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}
         >
+          {/* Trust Badge with Rating */}
+          <div className="mb-6 flex flex-col items-center gap-3">
+            <div className="flex items-center gap-1">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />
+              ))}
+            </div>
+            <div className="text-slate-300">
+              <span className="font-bold text-white">4.9/5</span> from 127+ property managers
+            </div>
+          </div>
+
           <div className="bg-brand-500/10 border-brand-500/20 text-brand-300 mb-8 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-medium backdrop-blur-sm">
             <Sparkles className="text-brand-400 h-4 w-4" />
             <span>Trusted by 500+ SA Property Managers</span>
@@ -406,6 +432,233 @@ export default function App() {
         </RevealOnScroll>
       </section>
 
+      {/* Product Showcase with Laptop Mockup */}
+      <section className="bg-slate-50 py-20 lg:py-32">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <RevealOnScroll>
+            <div className="mb-16 text-center">
+              <Badge color="blue">See It In Action</Badge>
+              <h2 className="mt-4 text-3xl font-bold text-slate-900 md:text-4xl">
+                Everything You Need in One Beautiful Dashboard
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
+                Manage your entire property portfolio from a single, intuitive interface. No more
+                juggling between apps.
+              </p>
+            </div>
+          </RevealOnScroll>
+
+          {/* Main Dashboard Mockup */}
+          <RevealOnScroll delay={200}>
+            <div className="relative mx-auto max-w-5xl">
+              {/* Laptop Frame */}
+              <div className="relative rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 p-2 shadow-2xl sm:p-3">
+                <div className="rounded-lg bg-slate-900 p-0.5 sm:p-1">
+                  <Image
+                    src="/mockups/mockup-dashboard.png"
+                    alt="VeldUnity Dashboard"
+                    width={1200}
+                    height={675}
+                    className="rounded-lg shadow-xl"
+                    priority
+                    unoptimized
+                  />
+                </div>
+              </div>
+
+              {/* Floating Feature Cards */}
+              <div className="absolute top-1/4 -left-4 hidden lg:block">
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
+                      <TrendingUp className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-500">Monthly Revenue</div>
+                      <div className="text-lg font-bold text-slate-900">+32%</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="absolute top-1/3 -right-4 hidden lg:block">
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
+                      <Clock className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-500">Time Saved</div>
+                      <div className="text-lg font-bold text-slate-900">13hrs/wk</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </RevealOnScroll>
+        </div>
+      </section>
+
+      {/* How It Works - Step by Step */}
+      <section className="bg-white py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <RevealOnScroll>
+            <div className="mb-16 text-center">
+              <Badge color="blue">Simple Setup</Badge>
+              <h2 className="mt-4 text-3xl font-bold text-slate-900 md:text-4xl">
+                From Setup to Success in Minutes
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
+                No technical skills required. Follow these simple steps and start saving time today.
+              </p>
+            </div>
+          </RevealOnScroll>
+
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {/* Step 1 */}
+            <RevealOnScroll delay={100}>
+              <div className="relative">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-2xl font-bold text-white shadow-lg">
+                  1
+                </div>
+                <div className="aspect-video overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-md">
+                  <Image
+                    src="/mockups/Properties Listing.jpg"
+                    alt="Add Properties"
+                    width={400}
+                    height={225}
+                    className="h-full w-full object-cover"
+                    unoptimized
+                  />
+                </div>
+                <h3 className="mt-6 text-xl font-bold text-slate-900">Import Properties</h3>
+                <p className="mt-2 text-slate-600">
+                  Add your properties manually or import from a spreadsheet. Takes less than 5
+                  minutes.
+                </p>
+              </div>
+            </RevealOnScroll>
+
+            {/* Step 2 */}
+            <RevealOnScroll delay={200}>
+              <div className="relative">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 text-2xl font-bold text-white shadow-lg">
+                  2
+                </div>
+                <div className="aspect-video overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-md">
+                  <Image
+                    src="/mockups/Booking Calendar.jpg"
+                    alt="Connect Platforms"
+                    width={400}
+                    height={225}
+                    className="h-full w-full object-cover"
+                    unoptimized
+                  />
+                </div>
+                <h3 className="mt-6 text-xl font-bold text-slate-900">Connect Platforms</h3>
+                <p className="mt-2 text-slate-600">
+                  Sync your Airbnb, Booking.com calendars. Never worry about double-bookings again.
+                </p>
+              </div>
+            </RevealOnScroll>
+
+            {/* Step 3 */}
+            <RevealOnScroll delay={300}>
+              <div className="relative">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-green-600 text-2xl font-bold text-white shadow-lg">
+                  3
+                </div>
+                <div className="aspect-video overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-md">
+                  <Image
+                    src="/mockups/Communications.jpg"
+                    alt="Automate Communications"
+                    width={400}
+                    height={225}
+                    className="h-full w-full object-cover"
+                    unoptimized
+                  />
+                </div>
+                <h3 className="mt-6 text-xl font-bold text-slate-900">Automate Everything</h3>
+                <p className="mt-2 text-slate-600">
+                  Set up automated rent reminders, maintenance alerts, and guest messages.
+                </p>
+              </div>
+            </RevealOnScroll>
+
+            {/* Step 4 - Add Tenants */}
+            <RevealOnScroll delay={400}>
+              <div className="relative">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-2xl font-bold text-white shadow-lg">
+                  4
+                </div>
+                <div className="aspect-video overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-md">
+                  <Image
+                    src="/mockups/Tenant Listing.jpg"
+                    alt="Manage Tenants"
+                    width={400}
+                    height={225}
+                    className="h-full w-full object-cover"
+                    unoptimized
+                  />
+                </div>
+                <h3 className="mt-6 text-xl font-bold text-slate-900">Add & Manage Tenants</h3>
+                <p className="mt-2 text-slate-600">
+                  Store tenant details, track leases, and manage relationships all in one place.
+                </p>
+              </div>
+            </RevealOnScroll>
+
+            {/* Step 5 - Tenant Portal */}
+            <RevealOnScroll delay={500}>
+              <div className="relative">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-2xl font-bold text-white shadow-lg">
+                  5
+                </div>
+                <div className="aspect-video overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-md">
+                  <Image
+                    src="/mockups/Communications.jpg"
+                    alt="Tenant Portal"
+                    width={400}
+                    height={225}
+                    className="h-full w-full object-cover"
+                    unoptimized
+                  />
+                </div>
+                <h3 className="mt-6 text-xl font-bold text-slate-900">Empower Your Tenants</h3>
+                <p className="mt-2 text-slate-600">
+                  Tenants get their own portal to receive payment reminders, log maintenance
+                  requests, and view lease details.
+                </p>
+              </div>
+            </RevealOnScroll>
+
+            {/* Step 6 - Track Revenue */}
+            <RevealOnScroll delay={600}>
+              <div className="relative">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-pink-600 text-2xl font-bold text-white shadow-lg">
+                  6
+                </div>
+                <div className="aspect-video overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-md">
+                  <Image
+                    src="/mockups/Financials.jpg"
+                    alt="Track Revenue"
+                    width={400}
+                    height={225}
+                    className="h-full w-full object-cover"
+                    unoptimized
+                  />
+                </div>
+                <h3 className="mt-6 text-xl font-bold text-slate-900">Watch Revenue Grow</h3>
+                <p className="mt-2 text-slate-600">
+                  Real-time financial reports, expense tracking, and insights to maximize your
+                  profits.
+                </p>
+              </div>
+            </RevealOnScroll>
+          </div>
+        </div>
+      </section>
+
       {/* Problem Section (Pain Points) */}
       <section className="bg-slate-50 py-20 lg:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -473,6 +726,162 @@ export default function App() {
               </div>
             </RevealOnScroll>
           </div>
+        </div>
+      </section>
+
+      {/* Before/After Visual Comparison */}
+      <section className="bg-white py-20 lg:py-32">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <RevealOnScroll>
+            <div className="mb-16 text-center">
+              <Badge color="green">Real Results</Badge>
+              <h2 className="mt-4 text-3xl font-bold text-slate-900 md:text-4xl">
+                The Difference Is Clear
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
+                See how VeldUnity transforms property management from chaotic to streamlined.
+              </p>
+            </div>
+          </RevealOnScroll>
+
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Before - Manual Way */}
+            <RevealOnScroll delay={100}>
+              <div className="overflow-hidden rounded-2xl border-2 border-red-200 bg-gradient-to-br from-red-50 to-white">
+                <div className="border-b border-red-200 bg-red-100 px-6 py-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                    <span className="text-sm font-bold text-red-900">The Manual Way</span>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="mb-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <XIcon className="mt-1 h-5 w-5 flex-shrink-0 text-red-500" />
+                      <div>
+                        <div className="font-semibold text-slate-900">Scattered Data</div>
+                        <div className="text-sm text-slate-600">
+                          Excel files, WhatsApp messages, email threads
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <XIcon className="mt-1 h-5 w-5 flex-shrink-0 text-red-500" />
+                      <div>
+                        <div className="font-semibold text-slate-900">Manual Everything</div>
+                        <div className="text-sm text-slate-600">
+                          Hours spent chasing rent, creating invoices
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <XIcon className="mt-1 h-5 w-5 flex-shrink-0 text-red-500" />
+                      <div>
+                        <div className="font-semibold text-slate-900">Double-Bookings</div>
+                        <div className="text-sm text-slate-600">
+                          Lost revenue and angry reviews from mistakes
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <XIcon className="mt-1 h-5 w-5 flex-shrink-0 text-red-500" />
+                      <div>
+                        <div className="font-semibold text-slate-900">No Financial Clarity</div>
+                        <div className="text-sm text-slate-600">
+                          Guessing profitability, scrambling at tax time
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-red-700">15+ hours</div>
+                      <div className="text-sm text-red-600">wasted per week</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </RevealOnScroll>
+
+            {/* After - VeldUnity Way */}
+            <RevealOnScroll delay={300}>
+              <div className="border-brand-500 from-brand-50 overflow-hidden rounded-2xl border-2 bg-gradient-to-br to-white shadow-xl">
+                <div className="border-brand-200 bg-brand-100 border-b px-6 py-3">
+                  <div className="flex items-center gap-2">
+                    <div className="bg-brand-500 h-3 w-3 rounded-full"></div>
+                    <span className="text-brand-900 text-sm font-bold">The VeldUnity Way</span>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="mb-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="text-brand-600 mt-1 h-5 w-5 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold text-slate-900">Centralized Hub</div>
+                        <div className="text-sm text-slate-600">
+                          All properties, tenants, bookings in one dashboard
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="text-brand-600 mt-1 h-5 w-5 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold text-slate-900">Automated Workflows</div>
+                        <div className="text-sm text-slate-600">
+                          Auto-reminders, invoices, calendar syncing
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="text-brand-600 mt-1 h-5 w-5 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold text-slate-900">Smart Sync</div>
+                        <div className="text-sm text-slate-600">
+                          Zero double-bookings with real-time calendar sync
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="text-brand-600 mt-1 h-5 w-5 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold text-slate-900">Financial Insights</div>
+                        <div className="text-sm text-slate-600">
+                          Real-time reports, expense tracking, tax-ready exports
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border-brand-200 bg-brand-50 mt-6 rounded-lg border p-4">
+                    <div className="text-center">
+                      <div className="text-brand-700 text-2xl font-bold">2 hours</div>
+                      <div className="text-brand-600 text-sm">per week (87% time savings)</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </RevealOnScroll>
+          </div>
+
+          {/* Mobile Mockup Preview */}
+          <RevealOnScroll delay={400}>
+            <div className="mt-16 text-center">
+              <p className="mb-8 text-lg font-semibold text-slate-700">
+                Manage everything on the go with our mobile app
+              </p>
+              <div className="mx-auto max-w-xs">
+                <div className="overflow-hidden rounded-3xl border-8 border-slate-900 bg-slate-900 shadow-2xl">
+                  <Image
+                    src="/mockups/Mobile Dashboard.jpg"
+                    alt="Mobile Dashboard"
+                    width={300}
+                    height={650}
+                    className="w-full"
+                    unoptimized
+                  />
+                </div>
+              </div>
+            </div>
+          </RevealOnScroll>
         </div>
       </section>
 
@@ -580,15 +989,26 @@ export default function App() {
 
             <RevealOnScroll delay={300}>
               <div className="relative">
-                {/* Abstract Graphic Representation of SA Map or UI */}
-                <div className="from-brand-500 aspect-square rotate-2 rounded-2xl bg-gradient-to-br to-purple-600 p-1 shadow-2xl transition-transform duration-500 hover:rotate-0">
-                  <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-xl bg-slate-900">
-                    <div className="bg-brand-500 absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 opacity-40 blur-[100px]"></div>
-                    <div className="z-10 p-8 text-center">
-                      <Globe className="text-brand-300 mx-auto mb-6 h-20 w-20" />
-                      <p className="text-2xl font-bold">
-                        Made in SA <br /> With ❤️
-                      </p>
+                {/* Mobile Mockup with SA Badge */}
+                <div className="relative mx-auto max-w-xs">
+                  <div className="from-brand-500 rotate-2 rounded-3xl bg-gradient-to-br to-purple-600 p-1 shadow-2xl transition-transform duration-500 hover:rotate-0">
+                    <div className="overflow-hidden rounded-2xl bg-slate-900">
+                      <Image
+                        src="/mockups/Mobile Dashboard.jpg"
+                        alt="Mobile Dashboard"
+                        width={300}
+                        height={500}
+                        className="h-auto w-full object-cover"
+                        unoptimized
+                      />
+                    </div>
+                  </div>
+
+                  {/* Made in SA Badge */}
+                  <div className="absolute -bottom-4 left-1/2 -translate-x-1/2">
+                    <div className="from-brand-500 to-brand-600 flex items-center gap-2 rounded-full bg-gradient-to-r px-6 py-3 shadow-xl">
+                      <Globe className="h-5 w-5 text-white" />
+                      <span className="text-sm font-bold text-white">Made in SA with ❤️</span>
                     </div>
                   </div>
                 </div>
@@ -854,6 +1274,31 @@ export default function App() {
           <div className="text-sm">© {new Date().getFullYear()} VeldUnity CRM.</div>
         </div>
       </footer>
+
+      {/* Sticky Floating CTA Buttons */}
+      {scrolled && (
+        <div className="fixed right-6 bottom-6 z-50 flex flex-col items-end gap-3">
+          {/* WhatsApp Button */}
+          <a
+            href="https://wa.me/27123456789?text=Hi,%20I'm%20interested%20in%20VeldUnity"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex h-14 w-14 items-center justify-center rounded-full bg-green-500 shadow-xl transition-all hover:scale-110 hover:bg-green-600"
+            title="Chat on WhatsApp"
+          >
+            <MessageSquare className="h-6 w-6 text-white" />
+          </a>
+
+          {/* Main CTA Button */}
+          <Link href="/contact">
+            <button className="bg-brand-600 hover:bg-brand-700 group flex items-center gap-2 rounded-full px-6 py-3 font-semibold text-white shadow-xl transition-all hover:scale-105">
+              <span className="hidden sm:inline">Start Free Trial</span>
+              <span className="sm:hidden">Try Free</span>
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
