@@ -48,77 +48,77 @@ interface Testimonial {
 
 const testimonials: Testimonial[] = [
   {
-    name: 'Michael T.',
-    role: 'Airbnb Host',
-    properties: '8 short-term rentals in Cape Town',
-    content:
-      'I was managing everything through WhatsApp and Google Calendar. The stress was unbearable. Since switching to DominionDesk, I have had ZERO double-bookings, and my 5-star ratings went from 73% to 96%.',
-    rating: 5,
-    result: '+23% in 5-star ratings',
-  },
-  {
     name: 'Nombuso M.',
-    role: 'Residential Landlord',
-    properties: '12 long-term rentals in JHB',
+    role: 'Property Manager',
+    properties: '24 residential properties in Johannesburg',
     content:
-      'Late rent payments were killing my cash flow. I spent hours chasing tenants. Now, automated reminders mean I get paid on time 9 out of 10 times. The system has paid for itself 10x over.',
+      'Late rent payments were killing my cash flow. I spent hours chasing tenants every month. Now, automated reminders mean I get paid on time 90% of the time. The system has paid for itself 10x over.',
     rating: 5,
     result: '90% on-time payments',
   },
   {
     name: 'David K.',
-    role: 'Property Investor',
-    properties: '5 mixed portfolio in Durban',
+    role: 'Rental Agency Owner',
+    properties: '45 managed units across Durban',
     content:
-      'We were drowning in paperwork. DominionDesk gave us our lives back. What used to take 15 hours a week now takes 2 hours. We have added 3 more properties because we can actually handle them now.',
+      'We were drowning in paperwork and tenant requests. DominionDesk gave us our business back. What used to take 15 hours a week now takes 2 hours. We have added 20 more units because we can actually handle the volume now.',
     rating: 5,
     result: 'Saved 13 hours/week',
+  },
+  {
+    name: 'Sarah V.',
+    role: 'Portfolio Landlord',
+    properties: '18 residential rentals in Cape Town',
+    content:
+      'Managing maintenance requests was a nightmare. Tenants would call, text, email - I lost track constantly. The tenant portal changed everything. Tenants log issues directly, I assign contractors, and everyone stays informed. Zero missed maintenance requests in 6 months.',
+    rating: 5,
+    result: '100% maintenance tracking',
   },
 ];
 
 const featuresList = {
-  shortTerm: [
-    {
-      title: 'Unified Inbox',
-      desc: 'WhatsApp, Airbnb, Booking.com messages in one place.',
-      icon: MessagesSquare,
-    },
-    {
-      title: 'Smart Calendar',
-      desc: 'Prevent double-bookings automatically across all platforms.',
-      icon: Calendar,
-    },
-    {
-      title: 'Auto-Reviews',
-      desc: 'Automatically review guests to boost your own profile.',
-      icon: Star,
-    },
-    {
-      title: 'Cleaner Scheduling',
-      desc: 'Auto-notify cleaning teams when guests check out.',
-      icon: Sparkles,
-    },
-  ],
   longTerm: [
     {
       title: 'Rent Collection',
-      desc: 'Automated invoices and reminders via SMS/Email.',
+      desc: 'Automated invoices and reminders via SMS/Email. Track payment status in real-time.',
       icon: CreditCard,
     },
     {
       title: 'Tenant Portal',
-      desc: 'Tenants can log maintenance issues and view leases.',
+      desc: 'Tenants can log maintenance issues, view leases, and communicate directly.',
       icon: Users,
     },
     {
       title: 'Expense Tracking',
-      desc: 'Scan receipts and categorize for tax season.',
+      desc: 'Track property expenses, categorize for tax season, and generate reports.',
       icon: BarChart3,
     },
     {
       title: 'Document Vault',
-      desc: 'Securely store FICA docs, leases, and inspections.',
+      desc: 'Securely store FICA docs, leases, inspections, and all property documents.',
       icon: FileText,
+    },
+  ],
+  shortTerm: [
+    {
+      title: 'Calendar Sync',
+      desc: 'Sync Airbnb, Booking.com calendars. Prevent double-bookings automatically.',
+      icon: Calendar,
+    },
+    {
+      title: 'Guest Messaging',
+      desc: 'Manage all guest communication across platforms in one inbox.',
+      icon: MessagesSquare,
+    },
+    {
+      title: 'Booking Management',
+      desc: 'Track reservations, check-ins, check-outs, and guest information.',
+      icon: Star,
+    },
+    {
+      title: 'Cleaning Schedule',
+      desc: 'Auto-notify cleaning teams when guests check out for seamless turnover.',
+      icon: Sparkles,
     },
   ],
 };
@@ -217,7 +217,7 @@ const FaqItem = ({ question, answer }: { question: string; answer: string }) => 
 
 export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'shortTerm' | 'longTerm'>('shortTerm');
+  const [activeTab, setActiveTab] = useState<'shortTerm' | 'longTerm'>('longTerm');
   const [scrolled, setScrolled] = useState(false);
   const [heroLoaded, setHeroLoaded] = useState(false);
 
@@ -357,17 +357,18 @@ export default function App() {
           </div>
 
           <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-white md:text-6xl lg:text-7xl">
-            Stop Losing Money to <br className="hidden md:block" />
+            Streamline Your Property <br className="hidden md:block" />
             <span className="from-brand-300 bg-gradient-to-r to-white bg-clip-text text-transparent">
-              Chaos & Admin Work
+              Management Business
             </span>
           </h1>
 
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-slate-300 md:text-xl">
-            DominionDesk is the all-in-one CRM built specifically for South African{' '}
-            <span className="font-semibold text-white">landlords</span> and{' '}
-            <span className="font-semibold text-white">Airbnb hosts</span>. Automate rent, prevent
-            double-bookings, and get your weekends back.
+            The complete property management solution built for South African{' '}
+            <span className="font-semibold text-white">landlords</span>,{' '}
+            <span className="font-semibold text-white">rental agencies</span>, and{' '}
+            <span className="font-semibold text-white">property managers</span>. Manage long-term
+            tenants, short-term rentals, or both—all from one powerful platform.
           </p>
 
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -423,9 +424,9 @@ export default function App() {
                 </div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-slate-900 md:text-4xl">Zero</div>
+                <div className="text-3xl font-bold text-slate-900 md:text-4xl">500+</div>
                 <div className="mt-1 text-sm font-medium tracking-wide text-slate-500 uppercase">
-                  Double Bookings
+                  Properties Managed
                 </div>
               </div>
             </div>
@@ -443,8 +444,8 @@ export default function App() {
                 Everything You Need in One Beautiful Dashboard
               </h2>
               <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
-                Manage your entire property portfolio from a single, intuitive interface. No more
-                juggling between apps.
+                Manage residential tenants, Airbnb guests, or both from a single, intuitive
+                interface. No more juggling between apps and spreadsheets.
               </p>
             </div>
           </RevealOnScroll>
@@ -548,17 +549,18 @@ export default function App() {
                 </div>
                 <div className="aspect-video overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-md">
                   <Image
-                    src="/mockups/img-booking-calendar.jpg"
-                    alt="Connect Platforms"
+                    src="/mockups/img-tenant-listing.jpg"
+                    alt="Add Tenants"
                     width={400}
                     height={225}
                     className="h-full w-full object-cover"
                     unoptimized
                   />
                 </div>
-                <h3 className="mt-6 text-xl font-bold text-slate-900">Connect Platforms</h3>
+                <h3 className="mt-6 text-xl font-bold text-slate-900">Add Your Tenants</h3>
                 <p className="mt-2 text-slate-600">
-                  Sync your Airbnb, Booking.com calendars. Never worry about double-bookings again.
+                  Import tenant information, track lease agreements, and maintain complete tenant
+                  records in one centralized system.
                 </p>
               </div>
             </RevealOnScroll>
@@ -571,22 +573,23 @@ export default function App() {
                 </div>
                 <div className="aspect-video overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-md">
                   <Image
-                    src="/mockups/img-communications.jpg"
-                    alt="Automate Communications"
+                    src="/mockups/img-financials.jpg"
+                    alt="Automate Rent Collection"
                     width={400}
                     height={225}
                     className="h-full w-full object-cover"
                     unoptimized
                   />
                 </div>
-                <h3 className="mt-6 text-xl font-bold text-slate-900">Automate Everything</h3>
+                <h3 className="mt-6 text-xl font-bold text-slate-900">Automate Rent Collection</h3>
                 <p className="mt-2 text-slate-600">
-                  Set up automated rent reminders, maintenance alerts, and guest messages.
+                  Set up automated rent reminders, invoice generation, and payment tracking. Never
+                  chase late payments again.
                 </p>
               </div>
             </RevealOnScroll>
 
-            {/* Step 4 - Add Tenants */}
+            {/* Step 4 - Maintenance Management */}
             <RevealOnScroll delay={400}>
               <div className="relative">
                 <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-2xl font-bold text-white shadow-lg">
@@ -594,17 +597,20 @@ export default function App() {
                 </div>
                 <div className="aspect-video overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-md">
                   <Image
-                    src="/mockups/img-tenant-listing.jpg"
-                    alt="Manage Tenants"
+                    src="/mockups/img-maintenance.jpg"
+                    alt="Maintenance Management"
                     width={400}
                     height={225}
                     className="h-full w-full object-cover"
                     unoptimized
                   />
                 </div>
-                <h3 className="mt-6 text-xl font-bold text-slate-900">Add & Manage Tenants</h3>
+                <h3 className="mt-6 text-xl font-bold text-slate-900">
+                  Track Maintenance Requests
+                </h3>
                 <p className="mt-2 text-slate-600">
-                  Store tenant details, track leases, and manage relationships all in one place.
+                  Tenants can log maintenance issues directly through their portal. Track, assign,
+                  and resolve issues efficiently.
                 </p>
               </div>
             </RevealOnScroll>
@@ -633,7 +639,7 @@ export default function App() {
               </div>
             </RevealOnScroll>
 
-            {/* Step 6 - Track Revenue */}
+            {/* Step 6 - Financial Reports */}
             <RevealOnScroll delay={600}>
               <div className="relative">
                 <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-pink-600 text-2xl font-bold text-white shadow-lg">
@@ -641,18 +647,20 @@ export default function App() {
                 </div>
                 <div className="aspect-video overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-md">
                   <Image
-                    src="/mockups/img-financials.jpg"
-                    alt="Track Revenue"
+                    src="/mockups/img-reports-one.jpg"
+                    alt="Financial Reports"
                     width={400}
                     height={225}
                     className="h-full w-full object-cover"
                     unoptimized
                   />
                 </div>
-                <h3 className="mt-6 text-xl font-bold text-slate-900">Watch Revenue Grow</h3>
+                <h3 className="mt-6 text-xl font-bold text-slate-900">
+                  Generate Financial Reports
+                </h3>
                 <p className="mt-2 text-slate-600">
-                  Real-time financial reports, expense tracking, and insights to maximize your
-                  profits.
+                  Track income, expenses, and profitability across your entire portfolio. Export
+                  reports for tax season with one click.
                 </p>
               </div>
             </RevealOnScroll>
@@ -688,10 +696,10 @@ export default function App() {
                 </h3>
                 <ul className="space-y-4">
                   {[
-                    'Drowning in WhatsApp groups & lost messages',
-                    'Late rent payments impacting cash flow',
-                    'Double-bookings killing Airbnb ratings',
-                    'Scrambling for receipts during tax season',
+                    'Chasing late rent payments every month',
+                    'Lost documents and messy paper trails',
+                    'Maintenance requests falling through the cracks',
+                    'Struggling with tax preparation and reporting',
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-3 text-slate-600">
                       <div className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-red-400" />
@@ -713,10 +721,10 @@ export default function App() {
                 </h3>
                 <ul className="space-y-4">
                   {[
-                    'Unified inbox for all tenants & guests',
-                    'Automated rent reminders & invoice generation',
-                    'Sync calendars across Airbnb, Booking.com & Direct',
-                    'One-click financial reports & expense tracking',
+                    'Automated rent reminders & payment tracking',
+                    'Centralized document storage & management',
+                    'Tenant portal for maintenance requests & communication',
+                    'One-click financial reports & tax-ready exports',
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-3 font-medium text-slate-800">
                       <CheckCircle2 className="text-brand-500 h-5 w-5 flex-shrink-0" />
@@ -893,8 +901,12 @@ export default function App() {
             <div className="mb-12 text-center">
               <Badge color="blue">Features</Badge>
               <h2 className="mt-4 text-3xl font-bold text-slate-900 md:text-4xl">
-                Tailored to Your Portfolio
+                Built for Any Property Type
               </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
+                Whether you manage residential long-term rentals, short-term Airbnbs, or a mix of
+                both—we've got you covered.
+              </p>
             </div>
           </RevealOnScroll>
 
@@ -903,16 +915,16 @@ export default function App() {
             <div className="mb-12 flex justify-center">
               <div className="inline-flex rounded-xl bg-slate-100 p-1.5">
                 <button
-                  onClick={() => setActiveTab('shortTerm')}
-                  className={`rounded-lg px-6 py-3 text-sm font-bold transition-all ${activeTab === 'shortTerm' ? 'text-brand-600 bg-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  Airbnb & Short Term
-                </button>
-                <button
                   onClick={() => setActiveTab('longTerm')}
                   className={`rounded-lg px-6 py-3 text-sm font-bold transition-all ${activeTab === 'longTerm' ? 'text-brand-600 bg-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                  Residential & Long Term
+                  Long-Term Rentals
+                </button>
+                <button
+                  onClick={() => setActiveTab('shortTerm')}
+                  className={`rounded-lg px-6 py-3 text-sm font-bold transition-all ${activeTab === 'shortTerm' ? 'text-brand-600 bg-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Short-Term & Airbnb
                 </button>
               </div>
             </div>

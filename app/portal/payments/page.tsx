@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Logo } from '@/components/ui/logo';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
 interface Payment {
@@ -92,10 +93,10 @@ export default function TenantPaymentsPage() {
       {/* Header */}
       <header className="bg-gradient-header border-b border-white/10 shadow-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-4">
-          <Link href="/portal/dashboard" className="flex items-center gap-2 text-white">
-            <Building2 className="h-6 w-6 flex-shrink-0" />
-            <span className="hidden text-lg font-semibold sm:inline">Tenant Portal</span>
-            <span className="text-lg font-semibold sm:hidden">Portal</span>
+          <Link href="/portal/dashboard" className="flex items-center gap-2">
+            <Logo variant="icon" width={28} height={28} />
+            <span className="hidden text-lg font-semibold text-white sm:inline">Tenant Portal</span>
+            <span className="text-lg font-semibold text-white sm:hidden">Portal</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
             <span className="hidden max-w-[150px] truncate text-sm text-white/80 md:inline">
@@ -312,6 +313,15 @@ export default function TenantPaymentsPage() {
           </Card>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-200 bg-white py-6">
+        <div className="mx-auto max-w-6xl px-4 text-center">
+          <p className="text-sm text-slate-600">
+            © {new Date().getFullYear()} DominionDesk. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

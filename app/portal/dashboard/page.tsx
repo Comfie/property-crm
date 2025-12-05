@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Logo } from '@/components/ui/logo';
 import {
   Dialog,
   DialogContent,
@@ -151,10 +152,10 @@ export default function TenantDashboardPage() {
       {/* Header */}
       <header className="bg-gradient-header border-b border-white/10 shadow-md">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-2 px-4 py-4">
-          <Link href="/portal/dashboard" className="flex items-center gap-2 text-white">
-            <Building2 className="h-6 w-6 flex-shrink-0" />
-            <span className="hidden text-lg font-semibold sm:inline">Tenant Portal</span>
-            <span className="text-lg font-semibold sm:hidden">Portal</span>
+          <Link href="/portal/dashboard" className="flex items-center gap-2">
+            <Logo variant="icon" width={28} height={28} />
+            <span className="hidden text-lg font-semibold text-white sm:inline">Tenant Portal</span>
+            <span className="text-lg font-semibold text-white sm:hidden">Portal</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
             <span className="hidden max-w-[150px] truncate text-sm text-white/80 md:inline">
@@ -227,7 +228,7 @@ export default function TenantDashboardPage() {
           </Card>
         )}
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {/* Maintenance Requests */}
           <Card>
             <CardHeader>
@@ -438,6 +439,15 @@ export default function TenantDashboardPage() {
           </Card>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-200 bg-white py-6">
+        <div className="mx-auto max-w-4xl px-4 text-center">
+          <p className="text-sm text-slate-600">
+            © {new Date().getFullYear()} DominionDesk. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
